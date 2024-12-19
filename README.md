@@ -1,4 +1,4 @@
-# VISCA-Controller
+# VISCA-Game-Controller
 
 An application to control PTZ Cameras using the SONY VISCA Protocol and a USB Game Controller
 
@@ -155,7 +155,38 @@ In order to implement these functions, the program assumes that one page of butt
 
 Sample configuration files are included for VMix and for OBS.
 
+## pyinstaller settings
 
+The following settings for pyinstaller under PyCharm work to build the program
+
+Program:
+```
+$ProjectFileDir$\.venv\Scripts\pyinstaller.exe
+```
+
+Arguments:
+```
+-y
+--clean
+--windowed
+--additional-hooks-dir=.
+--name
+$FileDirName$
+--icon=$FileDirName$.ico
+--onedir
+--version-file
+$FileDir$\version_info.rs
+--add-data
+$FileDirName$.png;.
+--add-data
+$FileDirName$.ico;.
+$FilePath$
+```
+
+Working Directory:
+```
+$FileDir$
+```
 
 
 
