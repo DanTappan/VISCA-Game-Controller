@@ -27,16 +27,16 @@ For example:
 
 ## How to install
 
-Either use the Windows installer or clone the sources and run them in your favorite IDE.
+Either use the [Windows installer](https://dantappan.net/?page_id=141) or clone the sources and run them in your favorite IDE.
 
-You may need to register for a free Hobbyist license for PySimpleGUI at https://www.pysimplegui.com/pricing and install the license when requested
+You may need to register for a [free Hobbyist license for PySimpleGUI](https://www.pysimplegui.com/pricing) and install the license when requested
 
 ## How to use
 
 Run the program. It will create a System Tray icon and a small "Feedback window" that can be repositioned or hidden.
 ![Feedback Window](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-window.png)
 
-I generally keep the window in the lower right of the screen.
+I generally keep the Feedback Window in the lower right of the screen.
 
 ![Vmix with feedback](https://dantappan.net/wp-content/uploads/2024/12/VMIXScreenshot-e1734556466255.png)
  
@@ -157,9 +157,9 @@ In order to implement these functions, the program assumes that one page of butt
 
 Sample configuration files are included for VMix and for OBS.
 
-## pyinstaller settings
+## PyCharm pyinstaller settings
 
-The following settings for pyinstaller under PyCharm work to build the program
+The following settings for pyinstaller under PyCharm work to build the program. I use [InstallForge](https://installforge.net/) to build the installer. There is a template InstallForge file as part of the distribution, but it will probably require editing.
 
 Program:
 ```
