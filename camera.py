@@ -1,3 +1,6 @@
+# NOTE: This is a copy of https://github.com/misterhay/VISCA-IP-Controller with a couple bug fixes. 
+# this will be removed once those fixes are merged and the pip library has been updated
+#
 import socket
 from typing import Optional, Tuple
 
