@@ -37,6 +37,7 @@ Run the program. It will create a System Tray icon and a small "Feedback window"
 ![Feedback Window](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-window.png)
 
 I generally keep the window in the lower right of the screen.
+
 ![Vmix with feedback](https://dantappan.net/wp-content/uploads/2024/12/VMIXScreenshot-e1734556466255.png)
  
 The window provides a dropdown menu with the following commands
@@ -60,7 +61,7 @@ The Configuration dialog allows setting the following parameters:
 ![Configuration Dialog](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-configure.png)
 - "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://dantappan.net/wp-content/uploads/2024/12/NDISelector.png) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
 - "Long Press" - the timeout value for a long press vs a short press of a button. The default is 1.5 seconds. The program must be restarted for this to take effect.
-- "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section "Bitfocus Companion Interface" below.
+- "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section [Bitfocus Companion Interface](#bitfocus-companion-interface).
 - "Invert Tilt" - reverses the sense of the tilt joystick control
 - "Swap Pan" - reverses the sense of the pan joystick control
 - "Debug Mode" - enables some debugging functions
