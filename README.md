@@ -32,6 +32,7 @@ Either use the Windows installer or clone the sources and run them in your favor
 You may need to register for a free Hobbyist license for PySimpleGUI at https://www.pysimplegui.com/pricing and install the license when requested
 
 ## How to use
+
 Run the program. It will create a System Tray icon and a small "Feedback window" that can be repositioned or hidden.
 ![Feedback Window](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-window.png)
 
@@ -57,7 +58,7 @@ Right clicking on the System Tray icon provides a popup menu with the following 
 The Configuration dialog allows setting the following parameters:
 
 ![Configuration Dialog](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-configure.png)
-- "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number of SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://dantappan.net/wp-content/uploads/2024/12/NDISelector.png) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+<camera number>. See the "Relay" button below.
+- "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://dantappan.net/wp-content/uploads/2024/12/NDISelector.png) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
 - "Long Press" - the timeout value for a long press vs a short press of a button. The default is 1.5 seconds. The program must be restarted for this to take effect.
 - "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section "Bitfocus Companion Interface" below.
 - "Invert Tilt" - reverses the sense of the tilt joystick control
@@ -147,7 +148,7 @@ Preset. The 8 possible directions on the D-pad each select one of presets 1-8. A
 
 ## Bitfocus Companion interface
 
-To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running one the machine, with the UDP API configured. See the BitFocus Companion documents.
+To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running on the machine, with the UDP Raw Socket API configured. See the [BitFocus Companion documentation[(https://user.bitfocus.io/docs/companion).
 
 In order to implement these functions, the program assumes that one page of buttons in Bitfocus Companion (defaults to page 99) are configured as follows:
 - Row 0, columns 1-4 : Select inputs 1-4 as the Preview
