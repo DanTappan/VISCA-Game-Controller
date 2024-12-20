@@ -12,9 +12,10 @@ This program was originally based on the project https://github.com/Internationa
 
 At this point the code and functionality has changed too much to be merged back with the original project
 
+
 ## Intended use
 
-This is intended to be used as part of a livestreaming video system consisting of
+This is intended to be used as part of a livestreaming video system consisting of:
 - A Windows PC (or possibly Linux or Mac. I have tested this extensively under Windows 11, but in principle the code could run on other systems that can run OBS or other streaming software)
 - An inexpensive USB game controller, such as the [Logitech F310](https://www.amazon.com/Logitech-940-000110-Gamepad-F310/). It should work with any controller with a similar set of controls and buttons, including [cheap generic controllers from AliExpress](https://www.aliexpress.us/item/3256806491970358.html).
 - PTZ cameras supporting SONY VISCA protocol and [NDI](https://ndi.video/). I have tested with cameras from [AVKANS](https://www.amazon.com/AVKANS-Tracking-Camera-Streaming-Worship/dp/B0CM91M5LN), Birddog ([P100](https://birddog.tv/p100-overview/) and [X1](https://birddog.tv/x1-overview/)), and [OBSBOT](https://www.obsbot.com/obsbot-tail-air-streaming-camera)
@@ -23,7 +24,9 @@ This is intended to be used as part of a livestreaming video system consisting o
 - [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and fading the Preview to Program 
 
 For example:
-![Streaming Station](https://dantappan.net/wp-content/uploads/2024/12/StreamStation-scaled-e1734556346665.jpg)
+
+![Streaming Station](screenshots/StreamStation.jpg)
+
 
 ## How to install
 
@@ -31,17 +34,20 @@ Either use the [Windows installer](https://dantappan.net/?page_id=141) or clone 
 
 You may need to register for a [free Hobbyist license for PySimpleGUI](https://www.pysimplegui.com/pricing) and install the license when requested
 
+
 ## How to use
 
 Run the program. It will create a System Tray icon and a small "Feedback window" that can be repositioned or hidden.
-![Feedback Window](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-window.png)
+
+![Feedback Window](screenshots/VISCA-controller-window.png)
 
 I generally keep the Feedback Window in the lower right of the screen.
 
-![Vmix with feedback](https://dantappan.net/wp-content/uploads/2024/12/VMIXScreenshot-e1734556466255.png)
+![Vmix with feedback](screenshots/VMIXScreenshot.png)
  
 The window provides a dropdown menu with the following commands
-![Feedback Window Menu](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-menu.png)
+
+![Feedback Window Menu](screenshots/VISCA-controller-menu.png)
 
 - "Minimize" - minimizes/hides the feedback window. To show the window again after hiding, see the system tray popup menu
 - "Configure" - puts up a configuration dialog for the program
@@ -50,7 +56,8 @@ The window provides a dropdown menu with the following commands
 - "Exit" - closes the program
 
 Right clicking on the System Tray icon provides a popup menu with the following commands
-![Popup menu](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-popup-menu.png)
+
+![Popup menu](screenshots/VISCA-controller-popup-menu.png)
 
 - "Show Window" - restores the feedback window after hiding
 - "Center Window" - in case the window somehow gets moved offscreem, this moves it back to the center of the screen
@@ -58,7 +65,8 @@ Right clicking on the System Tray icon provides a popup menu with the following 
 
 The Configuration dialog allows setting the following parameters:
 
-![Configuration Dialog](https://dantappan.net/wp-content/uploads/2024/12/VISCA-controller-configure.png)
+![Configuration Dialog](screenshots/VISCA-controller-configure.png)
+
 - "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://dantappan.net/wp-content/uploads/2024/12/NDISelector.png) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
 - "Long Press" - the timeout value for a long press vs a short press of a button. The default is 1.5 seconds. The program must be restarted for this to take effect.
 - "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section [Bitfocus Companion Interface](#bitfocus-companion-interface).
@@ -66,6 +74,7 @@ The Configuration dialog allows setting the following parameters:
 - "Swap Pan" - reverses the sense of the pan joystick control
 - "Debug Mode" - enables some debugging functions
 - "Relay" - automatically fills in the Camera&Port fields with the correct values for operation with the "NDI Camera Selector" VISCA Relay function.
+
 
 ## Controller Functions
 
@@ -147,9 +156,10 @@ Preset. The 8 possible directions on the D-pad each select one of presets 1-8. A
 </tr>
 </table>
 
+
 ## Bitfocus Companion interface
 
-To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running on the machine, with the UDP Raw Socket API configured. See the [BitFocus Companion documentation[(https://user.bitfocus.io/docs/companion).
+To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running on the machine, with the UDP Raw Socket API configured. See the [BitFocus Companion documentation](https://user.bitfocus.io/docs/companion).
 
 In order to implement these functions, the program assumes that one page of buttons in Bitfocus Companion (defaults to page 99) are configured as follows:
 - Row 0, columns 1-4 : Select inputs 1-4 as the Preview
@@ -157,9 +167,10 @@ In order to implement these functions, the program assumes that one page of butt
 
 Sample configuration files are included for VMix and for OBS.
 
+
 ## PyCharm pyinstaller settings
 
-The following settings for pyinstaller under PyCharm work to build the program. I use [InstallForge](https://installforge.net/) to build the installer. There is a template InstallForge file as part of the distribution, but it will probably require editing.
+The following settings for pyinstaller under PyCharm work to build the program. 
 
 Program:
 ```
@@ -190,5 +201,6 @@ Working Directory:
 $FileDir$
 ```
 
+I use [InstallForge](https://installforge.net/) to build the installer. There is a [template InstallForge file](Installer.ifp) in the repository, but it will probably require editing.
 
 
