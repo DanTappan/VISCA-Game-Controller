@@ -1,6 +1,6 @@
 # VISCA-Game-Controller
 
-An application to control PTZ Cameras using the SONY VISCA Protocol and a USB Game Controller
+An application to control PTZ Cameras using the [SONY VISCA Protocol](https://www.sony.net/Products/CameraSystem/CA/BRC_X1000_BRC_H800/Technical_Document/C456100121.pdf) and a USB Game Controller
 
 This program was originally based on the project https://github.com/International-Anglican-Church/visca-joystick and uses the VISCA camera library https://github.com/misterhay/VISCA-IP-Controller. It has been extensively rewritten to support such things as
 - a windowed interface and a Windows System Tray icon (using PySimpleGUI/PSGTray)
