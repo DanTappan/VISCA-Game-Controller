@@ -20,7 +20,7 @@ This is intended to be used as part of a livestreaming video system consisting o
 - An inexpensive USB game controller, such as the [Logitech F310](https://www.amazon.com/Logitech-940-000110-Gamepad-F310/). It should work with any controller with a similar set of controls and buttons, including [cheap generic controllers from AliExpress](https://www.aliexpress.us/item/3256806491970358.html).
 - PTZ cameras supporting SONY VISCA protocol and [NDI](https://ndi.video/). I have tested with cameras from [AVKANS](https://www.amazon.com/AVKANS-Tracking-Camera-Streaming-Worship/dp/B0CM91M5LN), Birddog ([P100](https://birddog.tv/p100-overview/) and [X1](https://birddog.tv/x1-overview/)), and [OBSBOT](https://www.obsbot.com/obsbot-tail-air-streaming-camera)
 - [VMix](https://www.vmix.com/) or [OBS](https://obsproject.com/) software for camera streaming
-- my [NDI Camera Selector](https://dantappan.net/wp-content/uploads/2024/12/NDISelector.png) program [not yet on Github] for selecting between NDI based cameras and forwarding VISCA packets 
+- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets 
 - [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and fading the Preview to Program 
 
 For example:
@@ -67,14 +67,13 @@ The Configuration dialog allows setting the following parameters:
 
 ![Configuration Dialog](screenshots/VISCA-controller-configure.png)
 
-- "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://dantappan.net/wp-content/uploads/2024/12/NDISelector.png) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
+- "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
 - "Long Press" - the timeout value for a long press vs a short press of a button. The default is 1.5 seconds. The program must be restarted for this to take effect.
 - "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section [Bitfocus Companion Interface](#bitfocus-companion-interface).
 - "Invert Tilt" - reverses the sense of the tilt joystick control
 - "Swap Pan" - reverses the sense of the pan joystick control
 - "Debug Mode" - enables some debugging functions
-- "Relay" - automatically fills in the Camera&Port fields with the correct values for operation with the "NDI Camera Selector" VISCA Relay function.
-
+- "Relay" - automatically fills in the Camera&Port fields with the correct values for operation with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) VISCA Relay function.
 
 ## Controller Functions
 
