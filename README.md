@@ -30,7 +30,7 @@ For example:
 
 ## How to install
 
-Either use the [Windows installer](https://dantappan.net/?page_id=141) or clone the sources and run them in your favorite IDE.
+Either use the [Windows installer](https://dantappan.net/projects#VISCA-Game-Controller) or clone the sources and run them in your favorite IDE.
 
 You may need to register for a [free Hobbyist license for PySimpleGUI](https://www.pysimplegui.com/pricing) and install the license when requested
 
