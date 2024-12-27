@@ -165,7 +165,7 @@ In order to implement these functions, the program assumes that one page of butt
 - Row 0, columns 1-4 : Select inputs 1-4 as the Preview
 - Row 1, column 1 : Fade/Cut the Preview to the Program
 
-Sample configuration files are included for VMix and for OBS.
+A [sample Companion configuration file](VMIX-OBS.companionconfig) is included in the distribution, which supports both OBS and Vmix (select page 98 in the application Config dialog for Vmix, and 99 for OBS)
 
 
 ## PyCharm pyinstaller settings
