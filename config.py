@@ -6,9 +6,9 @@ import PySimpleGUI as Sg
 
 Debug = False
 
-num_cams = 4
-cam_ips = ['10.100.1.202', '10.100.1.116', '0.0.0.0', '0.0.0.0']
-cam_ports = [52381, 52381, 0, 0]
+num_cams = 8
+cam_ips = ['127.0.0.1']*num_cams
+cam_ports = [52381]*num_cams
 
 sensitivity_tables = {
     'pan': {'joy': [0, 0.05, 0.3, 0.7, 0.9, 1], 'cam': [0, 0, 2, 8, 15, 20]},
@@ -36,6 +36,14 @@ def configure():
                Sg.Input(default_text=str(cam_ports[2]), key='PORT3', size=8)],
               [Sg.Input(default_text=cam_ips[3], key='CAM4', size=20),
                Sg.Input(default_text=str(cam_ports[3]), key='PORT4', size=8)],
+              [Sg.Input(default_text=cam_ips[4], key='CAM5', size=20),
+               Sg.Input(default_text=str(cam_ports[4]), key='PORT5', size=8)],
+              [Sg.Input(default_text=cam_ips[5], key='CAM6', size=20),
+               Sg.Input(default_text=str(cam_ports[5]), key='PORT6', size=8)],
+              [Sg.Input(default_text=cam_ips[6], key='CAM7', size=20),
+               Sg.Input(default_text=str(cam_ports[6]), key='PORT7', size=8)],
+              [Sg.Input(default_text=cam_ips[7], key='CAM8', size=20),
+               Sg.Input(default_text=str(cam_ports[7]), key='PORT8', size=8)],
               [Sg.Text('Long Press (restart required)'),
                Sg.Input(default_text=str(long_press_time), key='LONGPRESS', size=4), Sg.Text('seconds')],
               [Sg.Text('Bitfocus Companion Page '),
@@ -56,18 +64,18 @@ def configure():
             break
 
         elif event == 'Relay':
-            for x in range(4):
+            for x in range(num_cams):
                 window['CAM'+str(x+1)].update(value='127.0.0.1')
                 window['PORT'+str(x+1)].update(value=str(10000+x+1))
 
         elif event == 'Save':
-            for x in range(4):
+            for x in range(num_cams):
                 cam_ips[x] = values['CAM'+str(x+1)]
                 cam_ports[x] = int(values['PORT'+str(x+1)])
                 Sg.user_settings_set_entry('-CAM' + str(x+1) + '-', cam_ips[x])
                 Sg.user_settings_set_entry('-PORT' + str(x+1) + '-', cam_ports[x])
 
-            long_press_time = int(values['LONGPRESS'])
+            long_press_time = float(values['LONGPRESS'])
             Debug = values['-DEBUG-']
             invert_tilt = values['-INVERT-TILT-']
             swap_pan = values['-SWAP-PAN-']
@@ -90,21 +98,18 @@ def load_config():
     """ Load the saved configuration values at startup """
     global long_press_time, invert_tilt, swap_pan, companion_page
 
-    for x in range(4):
-        cam_ips[x] = Sg.user_settings_get_entry('-CAM'+str(x+1)+'-', '127.0.0.1')
+    for x in range(num_cams):
+        cam_ips[x] = Sg.user_settings_get_entry('-CAM'+str(x+1)+'-', '')
         port = Sg.user_settings_get_entry('-PORT' + str(x + 1) + '-', 52381)
         cam_ports[x] = port
 
     companion_page = Sg.user_settings_get_entry('-companion_page-', 99)
-    long_press_time = Sg.user_settings_get_entry('-long_press_time-', 2)
+    long_press_time = Sg.user_settings_get_entry('-long_press_time-', .5)
     invert_tilt = Sg.user_settings_get_entry('-invert-tilt-', False)
     swap_pan = Sg.user_settings_get_entry('-swap-pan-', False)
 
     if not Sg.user_settings_get_entry('-configured-', False):
         configure()
-
-
-
 
 credits_text = """
 Dan Tappan (https://dantappan.net) - 2024
@@ -162,8 +167,8 @@ class Config:
         configure()
 
     @property
-    def help_text(self):
-        return help_text
+    def num_cams(self):
+        return num_cams
 
     @property
     def debug(self):

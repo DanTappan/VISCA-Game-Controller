@@ -23,7 +23,8 @@ if Windows and UsePsgTray:
 # from visca_over_ip import Camera
 # from visca_over_ip.exceptions import ViscaException
 
-Progname = "VISCA Controller"
+Progname = "VISCA Game Controller"
+ProgVers = "0.6"
 cam: Optional[Camera] = None
 main_window:Optional[Sg.Window] = None
 bitfocus: Companion = Companion()
@@ -140,14 +141,20 @@ def connect_to_camera(cam_num) -> Camera:
 def handle_select_cam(button: ControllerButton = None):
     """
     Handle a button push to select a camera
-    activates on button down
+    activates on button uup. Long press selects 2nd bank of cameras
     """
     global cam, main_window
 
-    if button is None or not button.is_down:
+    if button is None or button.is_down:
         return
+
     cam_num = button.value
-    cam = connect_to_camera(cam_num)
+    if button.long_press:
+        cam_num = cam_num + 4
+    if cam_num < 1 or cam_num > config.num_cams:
+        print(f"Bad camera number {cam_num}")
+    else:
+        cam = connect_to_camera(cam_num)
 
 def handle_prev2prog(button: ControllerButton=None):
     """"
@@ -164,8 +171,8 @@ def handle_preset(button: ControllerButton):
     """
     Handle push on one of the presets
     button.value == preset number
-    activates on button release, distinguishes between short (call preset) and long (save preset)
-    pushes based on button downtime
+    Activates on button release, distinguishes between short  press(call preset)
+    and long press (save preset)
     """
     global cam
     if cam is None:
@@ -391,7 +398,6 @@ def main_loop():
             win.bring_to_front()
 
         elif event in ('Minimize', Sg.WIN_CLOSE_ATTEMPTED_EVENT):
-            # there seems to be a bug with timeout and attempted close
             if tray:
                 win.hide()
                 tray.show_icon()  # if hiding window, better make sure the icon is visible
@@ -516,7 +522,7 @@ def main():
     window_location = settings.get('-location-')
     window_hidden = settings.get('-hidden-')
 
-    output = Sg.Output(size=(30, 4))
+    output = Sg.Output(size=(35, 5))
     #output = Sg.Output(size=(50, 25)) # bigger window while debugging
 
     menu_def = [['Menu', ['Minimize', 'Configure', 'Help', 'Credits', 'Exit']]]
@@ -525,7 +531,8 @@ def main():
     window = Sg.Window( title=Progname, layout=layout,
                         no_titlebar=True, grab_anywhere=True, location=window_location,
                         enable_close_attempted_event=True,
-                        alpha_channel=0.75, keep_on_top=True)
+                        alpha_channel=0.75, keep_on_top=True,
+                        icon=controller_icon())
     if window_hidden:
         window.hide()
 
@@ -541,7 +548,7 @@ def main():
     window.finalize()
     main_window = window
 
-    print(f'Welcome to {Progname}!')
+    print(f'Welcome to {Progname}(v{ProgVers})!')
 
     cam = connect_to_camera(1)
 

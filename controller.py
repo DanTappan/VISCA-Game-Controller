@@ -18,7 +18,7 @@ Pan & Tilt: Left stick
 Zoom: Right stick
 Brightness: Left bumper : Decrease, Right: Increase
 Manual Focus: Left trigger: Near, Right: Far
-Select Camera: A, B, X, Y buttons = 1:4 (selects camera in Preview)
+Select Camera: A, B, X, Y = 1:4; Long press = 5:8 (selects camera in Preview)
 Fade Preview to Program: Push left stick
 Next button: AutoFocus
 Back button: short press = one push white balance, long press = auto white balance
@@ -177,7 +177,7 @@ class ControllerButton:
         self.time_down = 0
         self.double_click = False
         self.long_press = False
-        self.down_time = 0
+        self.time_down = 0
         self.is_down = False
         self.value = value
 
@@ -192,6 +192,7 @@ class ControllerButton:
         self.is_down = True
         self.double_click = (time.time() - self.time_down) < self.controller.doubleclick_limit
         self.time_down = time.time()
+        self.long_press = False
         handle_button(self)
 
     def button_up(self):
