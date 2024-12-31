@@ -5,7 +5,8 @@ An application to control PTZ Cameras using the [SONY VISCA Protocol](https://ww
 This program was originally based on the project https://github.com/International-Anglican-Church/visca-joystick and uses the VISCA camera library https://github.com/misterhay/VISCA-IP-Controller. It has been extensively rewritten to support such things as
 - a windowed interface and a Windows System Tray icon (using PySimpleGUI/PSGTray)
 - hot plugin/removal of controllers
-- integration with BitFocus Companion to automatically put selected cameras into the preview/program window when used with VMix or OBS
+- support for up to 8 cameras (for use with [Blackmagic Design ATEM ISO Extreme](https://www.blackmagicdesign.com/products/atemmini))
+- integration with BitFocus Companion to automatically put selected cameras into the preview/program window
 - additional functions for minimal whitebalance control (One Push, Auto)
 - some rearrangement of functions between buttons/joysticks/hats on the controller based on the principle of "it seemed to me to work better that way"
 - bug fixes and hardening
@@ -19,9 +20,9 @@ This is intended to be used as part of a livestreaming video system consisting o
 - A Windows PC (or possibly Linux or Mac. I have tested this extensively under Windows 11, but in principle the code could run on other systems that can run OBS or other streaming software)
 - An inexpensive USB game controller, such as the [Logitech F310](https://www.amazon.com/Logitech-940-000110-Gamepad-F310/). It should work with any controller with a similar set of controls and buttons, including [cheap generic controllers from AliExpress](https://www.aliexpress.us/item/3256806491970358.html).
 - PTZ cameras supporting SONY VISCA protocol and [NDI](https://ndi.video/). I have tested with cameras from [AVKANS](https://www.amazon.com/AVKANS-Tracking-Camera-Streaming-Worship/dp/B0CM91M5LN), Birddog ([P100](https://birddog.tv/p100-overview/) and [X1](https://birddog.tv/x1-overview/)), and [OBSBOT](https://www.obsbot.com/obsbot-tail-air-streaming-camera)
-- [VMix](https://www.vmix.com/) or [OBS](https://obsproject.com/) software for camera streaming
+- [BlackMagic Design ATEM](https://www.blackmagicdesign.com/products/atemmini), [VMix](https://www.vmix.com/) or [OBS](https://obsproject.com/) for camera streaming
 - my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets 
-- [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and fading the Preview to Program 
+- [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and switching the Preview to Program 
 
 For example:
 
@@ -86,10 +87,10 @@ The program supports the following functions using the game controller
 </tr>
 <tr>
 <td>
-Select camera 1-4. If BitFocus Companion is running (and properly configured) this also sets the Preview window to the selected camera
+Select camera 1-8. If BitFocus Companion is running (and properly configured) this also sets the Preview window to the selected camera
 </td>
 <td>
-Buttons A, B, X, Y
+Buttons A, B, X, Y - short press selects 1-4, long press selects 5-8
 </td>
 </tr>
 <tr>
@@ -164,7 +165,7 @@ In order to implement these functions, the program assumes that one page of butt
 - Row 0, columns 1-4 : Select inputs 1-4 as the Preview
 - Row 1, column 1 : Fade/Cut the Preview to the Program
 
-A [sample Companion configuration file](Sample.companionconfig) is included in the distribution, which supports both OBS and Vmix (select page 98 in the application Config dialog for Vmix, and 99 for OBS)
+A [sample Companion configuration file](Sample.companionconfig) is included in the distribution, which supports the Blackmagic ATEM, OBS, and Vmix (select page 97 in the application Config dialog for the ATEM, 98 for Vmix, and 99 for OBS)
 
 
 ## PyCharm pyinstaller settings
