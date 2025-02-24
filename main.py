@@ -24,7 +24,7 @@ if Windows and UsePsgTray:
 # from visca_over_ip.exceptions import ViscaException
 
 Progname = "VISCA Game Controller"
-ProgVers = "0.6"
+ProgVers = "0.7"
 cam: Optional[Camera] = None
 main_window:Optional[Sg.Window] = None
 bitfocus: Companion = Companion()
