@@ -23,8 +23,6 @@ if Windows and UsePsgTray:
 # from visca_over_ip import Camera
 # from visca_over_ip.exceptions import ViscaException
 
-Progname = "VISCA Game Controller"
-ProgVers = "0.7"
 cam: Optional[Camera] = None
 main_window:Optional[Sg.Window] = None
 bitfocus: Companion = Companion()
@@ -134,7 +132,7 @@ def connect_to_camera(cam_num) -> Camera:
     if UsePsgTray:
         tray = win.metadata
         if tray is not None:
-            tray.set_tooltip(f"{Progname}: Camera {cam_name}")
+            tray.set_tooltip(f"{config.progname}: Camera {cam_name}")
     
     return cam
 
@@ -212,9 +210,12 @@ def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> 
 
     table = config.sensitivity(table_name)
 
-    return sign * round(
+    val =sign * round(
         interp(abs(axis_position), table['joy'], table['cam'])
     )
+    if config.debug:
+        print(f"joystick: {axis_position} -> {val}")
+    return val
 
 focusing = False
 def handle_focus_near(axis: ControllerAxis):
@@ -522,13 +523,15 @@ def main():
     window_location = settings.get('-location-')
     window_hidden = settings.get('-hidden-')
 
-    output = Sg.Output(size=(35, 5))
-    #output = Sg.Output(size=(50, 25)) # bigger window while debugging
+    if config.debug:
+        output = Sg.Output(size=(50, 25)) # bigger window while debugging
+    else:
+        output = Sg.Output(size=(30, 5))
 
     menu_def = [['Menu', ['Minimize', 'Configure', 'Help', 'Credits', 'Exit']]]
     layout = [[Sg.Menu(menu_def)], [output]]
 
-    window = Sg.Window( title=Progname, layout=layout,
+    window = Sg.Window( title=config.progname, layout=layout,
                         no_titlebar=True, grab_anywhere=True, location=window_location,
                         enable_close_attempted_event=True,
                         alpha_channel=0.75, keep_on_top=True,
@@ -537,9 +540,9 @@ def main():
         window.hide()
 
     if UsePsgTray:
-        tooltip = f"Control the {Progname} app"
+        tooltip = f"Control the {config.progname} app"
         traymenu = ['', ['Show Window', 'Center Window', 'Exit']]
-        tray = SystemTray(traymenu, single_click_events=True, tooltip=tooltip, window=window,
+        tray = SystemTray(traymenu,  tooltip=tooltip, window=window,
                           icon=controller_icon())
         window.metadata = tray
     else:
@@ -548,7 +551,7 @@ def main():
     window.finalize()
     main_window = window
 
-    print(f'Welcome to {Progname}(v{ProgVers})!')
+    print(f'{config.progname}({config.progvers})')
 
     cam = connect_to_camera(1)
 

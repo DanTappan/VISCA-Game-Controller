@@ -6,18 +6,21 @@ import PySimpleGUI as Sg
 
 Debug = False
 
+Progname = "VISCA Game Controller"
+ProgVers = "0.8"
+
 num_cams = 8
 cam_ips = ['127.0.0.1']*num_cams
 cam_ports = [52381]*num_cams
 
 sensitivity_tables = {
-    'pan': {'joy': [0, 0.05, 0.3, 0.7, 0.9, 1], 'cam': [0, 0, 2, 6, 14, 18]},
-    'tilt': {'joy': [0, 0.07, 0.3, 0.65, 0.9, 1], 'cam': [0, 0, 3, 6, 14, 18]},
+    'pan': {'joy': [0, 0.05, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 2, 6,  8, 12, 18]},
+    'tilt': {'joy': [0, 0.07, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 3, 6, 8, 12, 18]},
     'zoom': {'joy': [0, 0.1, 0.3, 0.7, 1], 'cam': [0, 0, 2, 5, 7]},
     'focus': {'joy': [0, 0.1, 0.3, 0.7, 1], 'cam':[0, 0, 2, 5, 7]},
 }
 
-long_press_time = 1.5
+long_press_time = 0.5
 invert_tilt = False
 swap_pan = False
 # Bitfocus companion interface
@@ -113,21 +116,28 @@ def load_config():
         configure()
 
 credits_text = """
-Dan Tappan (https://dantappan.net) - 2024
+Dan Tappan (https://dantappan.net) - (c) 2024, 2025
 
-Written/debugged using PyCharm Community Edition (https://www.jetbrains.com/pycharm/)
+Written/debugged using PyCharm Community Edition 
+    https://www.jetbrains.com/pycharm/
 
-Derived from https://github.com/International-Anglican-Church/visca-joystick
+Derived from:
+    https://github.com/International-Anglican-Church/visca-joystick
 
-VISCA Camera control: https://github.com/misterhay/VISCA-IP-Controller
+VISCA Camera control: 
+     https://github.com/misterhay/VISCA-IP-Controller
 
-Graphical interface: PySimpleGUI (https://www.pysimplegui.com/) and psgtray (https://github.com/PySimpleGUI/psgtray)
+Graphical interface: 
+    PySimpleGUI-foss 
+    https://github.com/andor-pierdelacabeza/PySimpleGUI-4-foss
+    psgtray-foss
 
 Joystick Handling: pygame (https://www.pygame.org/)
 
-Icon based on: https://www.flaticon.com/free-icon/gamepad_8037145 - created by Hilmy Abiyyu A
+Icon based on: 
+    https://www.flaticon.com/free-icon/gamepad_8037145
+    created by Hilmy Abiyyu
  """
-
 
 class Config:
     def __init__(self):
@@ -143,6 +153,13 @@ class Config:
     @staticmethod
     def sensitivity(table: str):
         return sensitivity_tables[table]
+
+    @property
+    def progname(self):
+        return Progname
+    @property
+    def progvers(self):
+        return ProgVers
 
     @property
     def invert_tilt(self):
@@ -177,7 +194,7 @@ class Config:
 
     @property
     def credits_text(self):
-        return credits_text
+        return f"{Progname} {ProgVers}\n"+credits_text
 
     @property
     def brightness_button(self):
