@@ -167,12 +167,45 @@ In order to implement these functions, the program assumes that one page of butt
 
 A [sample Companion configuration file](Sample.companionconfig) is included in the distribution, which supports the Blackmagic ATEM, OBS, and Vmix (select page 97 in the application Config dialog for the ATEM, 98 for Vmix, and 99 for OBS)
 
+## Python Packages used
+- numpy
+- pillow
+- psgtray-foss
+- pygame
+- pyinstaller
+- PySimpleGUI-4-foss
+- pystray
 
 ## PyCharm pyinstaller settings
 
 The following settings for pyinstaller under PyCharm work to build the program. 
 
-Program:
+Program (run on main program file):
+````
+$FileDir$\.venv\Scripts\\pyi-makespec
+````
+Arguments:
+````
+--onedir
+--windowed
+--additional-hooks-dir=.
+--name
+$FileDirName$
+--icon=$FileDirName$.ico
+--version-file
+$FileDir$\version_info.rs
+--add-data
+$FileDirName$.png;.
+--add-data
+$FileDirName$.ico;.
+$FilePath$
+````
+Working Directory:
+```
+$FileDir$
+```
+
+Program (run on resulting spec file):
 ```
 $ProjectFileDir$\.venv\Scripts\pyinstaller.exe
 ```
@@ -181,18 +214,6 @@ Arguments:
 ```
 -y
 --clean
---windowed
---additional-hooks-dir=.
---name
-$FileDirName$
---icon=$FileDirName$.ico
---onedir
---version-file
-$FileDir$\version_info.rs
---add-data
-$FileDirName$.png;.
---add-data
-$FileDirName$.ico;.
 $FilePath$
 ```
 
