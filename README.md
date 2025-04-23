@@ -33,9 +33,6 @@ For example:
 
 Either use the [Windows installer](https://dantappan.net/projects#VISCA-Game-Controller) or clone the sources and run them in your favorite IDE.
 
-You may need to register for a [free Hobbyist license for PySimpleGUI](https://www.pysimplegui.com/pricing) and install the license when requested
-
-
 ## How to use
 
 Run the program. It will create a System Tray icon and a small "Feedback window" that can be repositioned or hidden.
