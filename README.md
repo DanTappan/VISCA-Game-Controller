@@ -33,9 +33,6 @@ For example:
 
 Either use the [Windows installer](https://dantappan.net/projects#VISCA-Game-Controller) or clone the sources and run them in your favorite IDE.
 
-You may need to register for a [free Hobbyist license for PySimpleGUI](https://www.pysimplegui.com/pricing) and install the license when requested
-
-
 ## How to use
 
 Run the program. It will create a System Tray icon and a small "Feedback window" that can be repositioned or hidden.
@@ -68,8 +65,8 @@ The Configuration dialog allows setting the following parameters:
 
 ![Configuration Dialog](screenshots/VISCA-controller-configure.png)
 
-- "Camera" and "Port" set the camera address and VISCA port for cameras 1-4. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
-- "Long Press" - the timeout value for a long press vs a short press of a button. The default is 1.5 seconds. The program must be restarted for this to take effect.
+- "Camera" and "Port" set the camera address and VISCA port for each cameras. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
+- "Long Press" - the timeout value for a long press vs a short press of a button. The program must be restarted for this to take effect.
 - "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section [Bitfocus Companion Interface](#bitfocus-companion-interface).
 - "Invert Tilt" - reverses the sense of the tilt joystick control
 - "Swap Pan" - reverses the sense of the pan joystick control
@@ -162,17 +159,50 @@ Preset. The 8 possible directions on the D-pad each select one of presets 1-8. A
 To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running on the machine, with the UDP Raw Socket API configured. See the [BitFocus Companion documentation](https://user.bitfocus.io/docs/companion).
 
 In order to implement these functions, the program assumes that one page of buttons in Bitfocus Companion (defaults to page 99) are configured as follows:
-- Row 0, columns 1-4 : Select inputs 1-4 as the Preview
+- Row 0, columns 1-8 : Select inputs 1-8 as the Preview
 - Row 1, column 1 : Fade/Cut the Preview to the Program
 
 A [sample Companion configuration file](Sample.companionconfig) is included in the distribution, which supports the Blackmagic ATEM, OBS, and Vmix (select page 97 in the application Config dialog for the ATEM, 98 for Vmix, and 99 for OBS)
 
+## Python Packages used
+- numpy
+- pillow
+- psgtray-foss
+- pygame
+- pyinstaller
+- PySimpleGUI-4-foss
+- pystray
 
 ## PyCharm pyinstaller settings
 
 The following settings for pyinstaller under PyCharm work to build the program. 
 
-Program:
+Program (run on main program file):
+````
+$FileDir$\.venv\Scripts\\pyi-makespec
+````
+Arguments:
+````
+--onedir
+--windowed
+--additional-hooks-dir=.
+--name
+$FileDirName$
+--icon=$FileDirName$.ico
+--version-file
+$FileDir$\version_info.rs
+--add-data
+$FileDirName$.png;.
+--add-data
+$FileDirName$.ico;.
+$FilePath$
+````
+Working Directory:
+```
+$FileDir$
+```
+
+Program (run on resulting spec file):
 ```
 $ProjectFileDir$\.venv\Scripts\pyinstaller.exe
 ```
@@ -181,18 +211,6 @@ Arguments:
 ```
 -y
 --clean
---windowed
---additional-hooks-dir=.
---name
-$FileDirName$
---icon=$FileDirName$.ico
---onedir
---version-file
-$FileDir$\version_info.rs
---add-data
-$FileDirName$.png;.
---add-data
-$FileDirName$.ico;.
 $FilePath$
 ```
 
