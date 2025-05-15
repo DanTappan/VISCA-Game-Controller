@@ -8,6 +8,7 @@ from icons import controller_icon
 import PySimpleGUI as Sg
 from camera import Camera
 # from exceptions import ViscaException
+# Use pygame-ce
 import pygame
 from numpy import interp
 from config import Config
@@ -15,6 +16,8 @@ from companion import Companion
 from controller import Controller, ControllerAxis, ControllerButton
 
 Windows = platform.system() == 'Windows'
+
+POWER_POLL_FREQUENCY = 300000   # 5 minutes in ms
 
 UsePsgTray = True
 if Windows and UsePsgTray:
@@ -350,6 +353,41 @@ def handle_zoom(axis:ControllerAxis):
             cam.zoom(zoom)
     zooming = zoom != 0
 
+last_power_level = 'unknown'
+#
+# Set the background color of the text window based on the current controller power level
+power_to_background = {
+    "unknown" : 'white',
+    "wired" : 'white',
+    "max" : 'white',
+    "full" : 'white',
+    "medium" : 'yellow',
+    "low" : 'orange',
+    "empty" : 'red'
+}
+def print_power_level(joystick: pygame.joystick.JoystickType, force=False, reset=False):
+    global last_power_level, main_window
+
+    if reset:
+        last_power_level = 'unknown'
+
+    if joystick is None:
+        return
+
+    power = joystick.get_power_level()
+
+    if power != 'unknown' and power != 'wired':
+        if force or power != last_power_level:
+            print(f'Joystick battery {power}')
+            last_power_level = power
+    try:
+        background = power_to_background[power]
+        main_window['OUTPUT'](background_color=background)
+    except IndexError:
+        pass
+
+
+
 def handle_pygame_event(ev:pygame.event.Event):
     """
     Handle a single pygame event. This is called as a closure via pygame_lock(), to make
@@ -361,6 +399,7 @@ def handle_pygame_event(ev:pygame.event.Event):
         joystick = controller.get_pygame_joystick()
         if joystick is not None:
             print(joystick.get_name())
+            print_power_level(joystick, True, True)
         else:
             print("No joystick")
     else:
@@ -431,6 +470,9 @@ def main_loop():
                 ev = values[0]
             pygame_lock(lambda: handle_pygame_event(ev))
 
+        elif event == 'POWER_POLL':
+            print_power_level(controller.get_pygame_joystick())
+
 
 pygame_task_exit = False
 pygame_thread: Optional[threading.Thread] = None
@@ -445,6 +487,8 @@ def pygame_task(win):
 # To reduce startup time: call only the init() functions that we need
     pygame.display.init()
     pygame.joystick.init()
+    if pygame.joystick.get_count() == 0:
+        print("No Joystick")
 
     while not pygame_task_exit:
         # noinspection PyBroadException
@@ -524,9 +568,9 @@ def main():
     window_hidden = settings.get('-hidden-')
 
     if config.debug:
-        output = Sg.Output(size=(50, 25)) # bigger window while debugging
+        output = Sg.Output(size=(50, 25), key='OUTPUT') # bigger window while debugging
     else:
-        output = Sg.Output(size=(30, 5))
+        output = Sg.Output(size=(30, 5), key='OUTPUT')
 
     menu_def = [['Menu', ['Minimize', 'Configure', 'Help', 'Credits', 'Exit']]]
     layout = [[Sg.Menu(menu_def)], [output]]
@@ -549,6 +593,10 @@ def main():
         tray = None
 
     window.finalize()
+
+    # Start timer to poll power level
+    window.timer_start(frequency_ms=POWER_POLL_FREQUENCY, repeating=True, key='POWER_POLL')
+
     main_window = window
 
     print(f'{config.progname}({config.progvers})')

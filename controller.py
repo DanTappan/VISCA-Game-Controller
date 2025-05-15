@@ -19,7 +19,7 @@ Zoom: Right stick
 Brightness: Left bumper : Decrease, Right: Increase
 Manual Focus: Left trigger: Near, Right: Far
 Select Camera: A, B, X, Y = 1:4; Long press = 5:8 (selects camera in Preview)
-Fade Preview to Program: Push left stick
+Fade Preview to Program: Push left or right stick
 Next button: AutoFocus
 Back button: short press = one push white balance, long press = auto white balance
 D-pad: short press = recall preset 1-8, long press = set preset 1-8
@@ -55,7 +55,8 @@ if Windows:
 
         AUTO_FOCUS=6
         WHITE_BALANCE=7
-        PREV2PROG=8
+        PREV2PROG=8     # left stick
+        PREV2PROG2=9    # right stick
 
         # Axes
         PAN=0
@@ -80,6 +81,7 @@ elif Linux:
         AUTO_FOCUS = 6
         WHITE_BALANCE=7
         PREV2PROG = 8
+        PREV2PROG2=9
 
         # Axes
         PAN = 0
@@ -291,6 +293,7 @@ def setup_controller(controller: Controller):
     controller.buttons[ControllerInput.AUTO_FOCUS] = ControllerButton(controller, ControlFunc.AUTOFOCUS)
     controller.buttons[ControllerInput.WHITE_BALANCE] = ControllerButton(controller, ControlFunc.WHITEBALANCE)
     controller.buttons[ControllerInput.PREV2PROG] = ControllerButton(controller, ControlFunc.PREV2PROG)
+    controller.buttons[ControllerInput.PREV2PROG2] = ControllerButton(controller, ControlFunc.PREV2PROG)
 
     null_axis = ControllerAxis(controller, ControlFunc.NONE)
     controller.axes = [null_axis] * joystick.get_numaxes()

@@ -7,15 +7,15 @@ import PySimpleGUI as Sg
 Debug = False
 
 Progname = "VISCA Game Controller"
-ProgVers = "0.8"
+ProgVers = "0.9"
 
 num_cams = 8
 cam_ips = ['127.0.0.1']*num_cams
 cam_ports = [52381]*num_cams
 
 sensitivity_tables = {
-    'pan': {'joy': [0, 0.05, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 2, 6,  8, 12, 18]},
-    'tilt': {'joy': [0, 0.07, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 3, 6, 8, 12, 18]},
+    'pan': {'joy': [0, 0.1, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 2, 6,  8, 12, 18]},
+    'tilt': {'joy': [0, 0.1, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 3, 6, 8, 12, 18]},
     'zoom': {'joy': [0, 0.1, 0.3, 0.7, 1], 'cam': [0, 0, 2, 5, 7]},
     'focus': {'joy': [0, 0.1, 0.3, 0.7, 1], 'cam':[0, 0, 2, 5, 7]},
 }
