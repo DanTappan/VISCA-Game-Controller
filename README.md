@@ -142,7 +142,7 @@ Left and right front buttons
 Preview to Program. If Bitfocus Companion is running (and properly configured) then the Preview window is swapped with the Program window
 </td>
 <td>
-Left joystick button
+Left or right joystick button
 </td>
 </tr>
 <tr>
