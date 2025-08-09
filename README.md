@@ -75,7 +75,7 @@ The Configuration dialog allows setting the following parameters:
 
 ## Controller Functions
 
-The program supports the following functions using the game controller
+The program supports the following functions using a game controller
 
 <Table>
 <tr>
@@ -153,6 +153,88 @@ Preset. The 8 possible directions on the D-pad each select one of presets 1-8. A
 </tr>
 </table>
 
+![Game Controller](GameController.png)
+
+The Program supports the following functions using a Flight Simulator Joystick, such as as the [Logitech Extreme 3D Pro](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.963290-0403.html)
+
+<Table>
+<tr>
+<td><b>Function</b></td>
+<td><b>Controller input</b></td>
+</tr>
+ <tr>
+<td>
+Pan/Tilt the camera
+</td>
+<td>
+Move the joystick left to right (pan) or back and forth (tilt)
+</td>
+</tr>
+ <tr>
+<td>
+Zoom the camera
+</td>
+<td>
+Twist the joystick
+</td>
+</tr>
+<tr>
+<td>
+Select camera 1-8. If BitFocus Companion is running (and properly configured) this also sets the Preview window to the selected camera
+</td>
+<td>
+The 4 buttons on the top of the joystick. Short push selects 1-4, long push 5-8
+</td>
+</tr>
+<tr>
+<td>
+Autofocus mode
+</td>
+<td>
+Left hand button on controller, often labeled 'next'
+</td>
+</tr>
+<tr>
+<td>
+White balance. A short push selects "one push white balance". A long push selects auto white balance.
+</td>
+<td>
+Side trigger
+</td>
+</tr>
+<tr>
+<td>
+Focus
+</td>
+<td>
+mini-DPad on the top of the joystick. Push up to manually focus further out, down to focus nearer, side to side selects autofocus mode
+</td>
+</tr>
+<tr>
+<td>
+Increase/Decrease brightness. Push the left button to increase, the right to decrease.
+</td>
+<td>
+Left and right front buttons
+</td>
+</tr>
+<tr>
+<td>
+Preview to Program. If Bitfocus Companion is running (and properly configured) then the Preview window is swapped with the Program window
+</td>
+<td>
+Front trigger
+</td>
+</tr>
+<tr>
+<td>
+Presets 1-6
+</td>
+<td>Base buttons. A long push sets the preset, a short push recalls</td>
+</tr>
+</table>
+
+![Logitech Joystick](LogitechJoystick.png)
 
 ## Bitfocus Companion interface
 
