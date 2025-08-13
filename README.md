@@ -18,10 +18,12 @@ At this point the code and functionality has changed too much to be merged back 
 
 This is intended to be used as part of a livestreaming video system consisting of:
 - A Windows PC (or possibly Linux or Mac. I have tested this extensively under Windows 11, but in principle the code could run on other systems that can run OBS or other streaming software)
-- An inexpensive USB game controller, such as the [Logitech F310](https://www.amazon.com/Logitech-940-000110-Gamepad-F310/). It should work with any controller with a similar set of controls and buttons, including [cheap generic controllers from AliExpress](https://www.aliexpress.us/item/3256806491970358.html).
+- An inexpensive USB game controller, such as
+  - the [Logitech F310](https://www.amazon.com/Logitech-940-000110-Gamepad-F310/). It should also work with any controller with a similar set of controls and buttons, including [cheap generic controllers from AliExpress](https://www.aliexpress.us/item/3256806491970358.html).
+  - the [LogiTech Extreme 3D PRO](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.html) Flight Simulator joystick.
 - PTZ cameras supporting SONY VISCA protocol and [NDI](https://ndi.video/). I have tested with cameras from [AVKANS](https://www.amazon.com/AVKANS-Tracking-Camera-Streaming-Worship/dp/B0CM91M5LN), Birddog ([P100](https://birddog.tv/p100-overview/) and [X1](https://birddog.tv/x1-overview/)), and [OBSBOT](https://www.obsbot.com/obsbot-tail-air-streaming-camera)
 - [BlackMagic Design ATEM](https://www.blackmagicdesign.com/products/atemmini), [VMix](https://www.vmix.com/) or [OBS](https://obsproject.com/) for camera streaming
-- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets 
+- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets (this is not required, but is useful for dynamically selecting coameras without requiring reconfiguration of the same Controller app)
 - [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and switching the Preview to Program 
 
 For example:
@@ -66,7 +68,8 @@ The Configuration dialog allows setting the following parameters:
 ![Configuration Dialog](screenshots/VISCA-controller-configure.png)
 
 - "Camera" and "Port" set the camera address and VISCA port for each cameras. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
-- "Long Press" - the timeout value for a long press vs a short press of a button. The program must be restarted for this to take effect.
+- "Long Press" - the timeout value for a long press vs a short press of a button. The program must be restarted for a change to take effect.
+- "Dead Zone". This sets the size of the center dead zone, where the joysticks will not respond. This is useful for noisy analog joysticks that do not center. It is also useful for the *Logitech Extreme 3D PRO*, where moving the stick tends to also twist the stick (Zoom function). Setting the value in the configuration dialog will override any default values selected by the program. Program restart ius required for a change to taker effect.
 - "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section [Bitfocus Companion Interface](#bitfocus-companion-interface).
 - "Invert Tilt" - reverses the sense of the tilt joystick control
 - "Swap Pan" - reverses the sense of the pan joystick control
@@ -76,6 +79,8 @@ The Configuration dialog allows setting the following parameters:
 ## Controller Functions
 
 The program supports the following functions using a game controller
+
+![Game Controller](GameController.png)
 
 <Table>
 <tr>
@@ -147,15 +152,15 @@ Left or right joystick button
 </tr>
 <tr>
 <td>
-Preset. The 8 possible directions on the D-pad each select one of presets 1-8. A short push recalls the preset. A long push sets the preset
+Preset. The 8 possible directions on the D-pad/"Hat" each select one of presets 1-8. A short push recalls the preset. A long push sets the preset
 </td>
-<td>D-pad (Hat)</td>
+<td>D-pad/"Hat"</td>
 </tr>
 </table>
 
-![Game Controller](GameController.png)
-
 The Program supports the following functions using a Flight Simulator Joystick, such as as the [Logitech Extreme 3D Pro](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.963290-0403.html)
+
+![Logitech Joystick](LogitechJoystick.png)
 
 <Table>
 <tr>
@@ -188,14 +193,6 @@ The 4 buttons on the top of the joystick. Short push selects 1-4, long push 5-8
 </tr>
 <tr>
 <td>
-Autofocus mode
-</td>
-<td>
-Left hand button on controller, often labeled 'next'
-</td>
-</tr>
-<tr>
-<td>
 White balance. A short push selects "one push white balance". A long push selects auto white balance.
 </td>
 <td>
@@ -207,7 +204,7 @@ Side trigger
 Focus
 </td>
 <td>
-mini-DPad on the top of the joystick. Push up to manually focus further out, down to focus nearer, side to side selects autofocus mode
+mini-DPad/"Hat" on the top of the joystick. Push up to manually focus further out, down to focus nearer, side to side selects autofocus mode
 </td>
 </tr>
 <tr>
@@ -234,8 +231,6 @@ Presets 1-6
 </tr>
 </table>
 
-![Logitech Joystick](LogitechJoystick.png)
-
 ## Bitfocus Companion interface
 
 To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running on the machine, with the UDP Raw Socket API configured. See the [BitFocus Companion documentation](https://user.bitfocus.io/docs/companion).
@@ -250,7 +245,7 @@ A [sample Companion configuration file](Sample.companionconfig) is included in t
 - numpy
 - pillow
 - psgtray-foss
-- pygame
+- pygame-ce
 - pyinstaller
 - PySimpleGUI-4-foss
 - pystray
