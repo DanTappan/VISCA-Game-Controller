@@ -4,32 +4,34 @@
 import gc
 import PySimpleGUI as Sg
 
-Debug = False
+g_Debug = False
 
-Progname = "VISCA Game Controller"
-ProgVers = "0.9"
+g_Progname = "VISCA Game Controller"
+g_ProgVers = "1.0beta1"
 
-num_cams = 8
-cam_ips = ['127.0.0.1']*num_cams
-cam_ports = [52381]*num_cams
+g_num_cams = 8
+cam_ips = ['127.0.0.1']*g_num_cams
+cam_ports = [52381]*g_num_cams
 
 sensitivity_tables = {
-    'pan': {'joy': [0, 0.1, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 2, 6,  8, 12, 18]},
-    'tilt': {'joy': [0, 0.1, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 3, 6, 8, 12, 18]},
-    'zoom': {'joy': [0, 0.1, 0.3, 0.7, 1], 'cam': [0, 0, 2, 5, 7]},
-    'focus': {'joy': [0, 0.1, 0.3, 0.7, 1], 'cam':[0, 0, 2, 5, 7]},
+    'pan': {'joy': [0, 0.15, 0.2, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 1, 2, 6,  8, 12, 18]},
+    'tilt': {'joy': [0, 0.15, 0.2, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 1, 3, 6, 8, 12, 18]},
+    'zoom': {'joy': [0, 0.15, 0.2, 0.3, 0.4, 0.5, 0.7, 1], 'cam': [0, 0, 1, 1, 1, 3, 5, 7]},
+    'focus': {'joy': [0, 0.2, 0.3, 0.7, 1], 'cam':[0, 0, 2, 5, 7]},
 }
 
-long_press_time = 0.5
-invert_tilt = False
-swap_pan = False
+g_long_press_time = 0
+g_invert_tilt = False
+g_swap_pan = False
+g_dead_zone = None
+
 # Bitfocus companion interface
-# the trigger commands are assumed to all be on one page (currently hardwired to 99)
-companion_page = 99
+# the trigger commands are assumed to all be on one page (currently defaults to 99)
+g_companion_page = 99
 
 def configure():
     """ Configuration dialog """
-    global long_press_time, Debug, companion_page, swap_pan, invert_tilt
+    global g_long_press_time, g_Debug, g_companion_page, g_swap_pan, g_invert_tilt, g_dead_zone
 
     layout = [[Sg.Text("Camera", size=20), Sg.Text("Port")],
               [Sg.Input(default_text=cam_ips[0], key='CAM1', size=20),
@@ -49,12 +51,14 @@ def configure():
               [Sg.Input(default_text=cam_ips[7], key='CAM8', size=20),
                Sg.Input(default_text=str(cam_ports[7]), key='PORT8', size=8)],
               [Sg.Text('Long Press (restart required)'),
-               Sg.Input(default_text=str(long_press_time), key='LONGPRESS', size=4), Sg.Text('seconds')],
+               Sg.Input(default_text=str(g_long_press_time), key='-LONG-PRESS-', size=4), Sg.Text('seconds')],
+              [Sg.Text('Joystick dead zone (restart required)'),
+               Sg.Input(default_text=str(g_dead_zone or ''), key='-DEAD-ZONE-', size=4)],
               [Sg.Text('Bitfocus Companion Page '),
-               Sg.Input(default_text=str(companion_page), key='COMPANIONPAGE', size=4)],
-              [Sg.Checkbox('Invert Tilt', default=invert_tilt, key='-INVERT-TILT-'),
-               Sg.Checkbox('Swap Pan', default=swap_pan, key='-SWAP-PAN-'),
-               Sg.Checkbox('Debug Mode', False, key='-DEBUG-')],
+               Sg.Input(default_text=str(g_companion_page), key='-COMPANION-PAGE-', size=4)],
+              [Sg.Checkbox('Invert Tilt', default=g_invert_tilt, key='-INVERT-TILT-'),
+               Sg.Checkbox('Swap Pan', default=g_swap_pan, key='-SWAP-PAN-'),
+               Sg.Checkbox('Debug Mode', default=g_Debug, key='-DEBUG-')],
               [Sg.Button('Relay', tooltip='Fill in values for VISCA Relay'),
                Sg.Button('Save'),
                Sg.Button('Cancel')]
@@ -68,26 +72,36 @@ def configure():
             break
 
         elif event == 'Relay':
-            for x in range(num_cams):
+            for x in range(g_num_cams):
                 window['CAM'+str(x+1)].update(value='127.0.0.1')
                 window['PORT'+str(x+1)].update(value=str(10000+x+1))
 
         elif event == 'Save':
-            for x in range(num_cams):
+            for x in range(g_num_cams):
                 cam_ips[x] = values['CAM'+str(x+1)]
                 cam_ports[x] = int(values['PORT'+str(x+1)])
                 Sg.user_settings_set_entry('-CAM' + str(x+1) + '-', cam_ips[x])
                 Sg.user_settings_set_entry('-PORT' + str(x+1) + '-', cam_ports[x])
 
-            long_press_time = float(values['LONGPRESS'])
-            Debug = values['-DEBUG-']
-            invert_tilt = values['-INVERT-TILT-']
-            swap_pan = values['-SWAP-PAN-']
-            companion_page = int(values['COMPANIONPAGE'])
-            Sg.user_settings_set_entry('-long_press_time-', long_press_time)
-            Sg.user_settings_set_entry('-companion_page-', companion_page)
-            Sg.user_settings_set_entry('-invert-tilt-', invert_tilt)
-            Sg.user_settings_set_entry('-swap-pan-', swap_pan)
+            try:
+                g_long_press_time = float(values['-LONG-PRESS-'])
+            except ValueError:
+                g_long_press_time = 0.5
+            g_Debug = values['-DEBUG-']
+            g_invert_tilt = values['-INVERT-TILT-']
+            g_swap_pan = values['-SWAP-PAN-']
+            g_dead_zone = values['-DEAD-ZONE-']
+            try:
+                g_dead_zone = float(g_dead_zone)
+            except ValueError:
+                g_dead_zone = None
+            g_companion_page = int(values['-COMPANION-PAGE-'])
+            Sg.user_settings_set_entry('-long_press_time-', g_long_press_time)
+            Sg.user_settings_set_entry('-companion_page-', g_companion_page)
+            Sg.user_settings_set_entry('-invert-tilt-', g_invert_tilt)
+            Sg.user_settings_set_entry('-swap-pan-', g_swap_pan)
+            Sg.user_settings_set_entry('-debug-', g_Debug)
+            Sg.user_settings_set_entry('-dead-zone-', g_dead_zone)
             Sg.user_settings_set_entry('-configured-', True)
             break
 
@@ -100,18 +114,19 @@ def configure():
 
 def load_config():
     """ Load the saved configuration values at startup """
-    global long_press_time, invert_tilt, swap_pan, companion_page
+    global g_long_press_time, g_invert_tilt, g_swap_pan, g_companion_page, g_Debug, g_dead_zone
 
-    for x in range(num_cams):
+    for x in range(g_num_cams):
         cam_ips[x] = Sg.user_settings_get_entry('-CAM'+str(x+1)+'-', '')
         port = Sg.user_settings_get_entry('-PORT' + str(x + 1) + '-', 52381)
         cam_ports[x] = port
 
-    companion_page = Sg.user_settings_get_entry('-companion_page-', 99)
-    long_press_time = Sg.user_settings_get_entry('-long_press_time-', .5)
-    invert_tilt = Sg.user_settings_get_entry('-invert-tilt-', False)
-    swap_pan = Sg.user_settings_get_entry('-swap-pan-', False)
-
+    g_companion_page = Sg.user_settings_get_entry('-companion_page-', 99)
+    g_long_press_time = Sg.user_settings_get_entry('-long_press_time-', .5)
+    g_invert_tilt = Sg.user_settings_get_entry('-invert-tilt-', False)
+    g_swap_pan = Sg.user_settings_get_entry('-swap-pan-', False)
+    g_Debug = Sg.user_settings_get_entry('-debug-', False)
+    g_dead_zone = Sg.user_settings_get_entry('-dead-zone-', None)
     if not Sg.user_settings_get_entry('-configured-', False):
         configure()
 
@@ -140,6 +155,8 @@ Icon based on:
  """
 
 class Config:
+    global g_dead_zone, g_Debug, g_Progname, g_ProgVers, g_invert_tilt, g_swap_pan, g_num_cams, g_long_press_time
+
     def __init__(self):
         self.mappings = None
         # True == 'use buttons for brightness', False == 'use a joystick for brightness'
@@ -148,7 +165,7 @@ class Config:
 
     @staticmethod
     def companion(row:int, column:int):
-        return [companion_page, row, column]
+        return [g_companion_page, row, column]
 
     @staticmethod
     def sensitivity(table: str):
@@ -156,22 +173,22 @@ class Config:
 
     @property
     def progname(self):
-        return Progname
+        return g_Progname
     @property
     def progvers(self):
-        return ProgVers
+        return g_ProgVers
 
     @property
     def invert_tilt(self):
-        return invert_tilt
+        return g_invert_tilt
 
     @property
     def swap_pan(self):
-        return swap_pan
+        return g_swap_pan
 
     @property
     def long_press_time(self):
-        return long_press_time
+        return g_long_press_time
 
     @staticmethod
     def cam_address(idx):
@@ -186,15 +203,19 @@ class Config:
 
     @property
     def num_cams(self):
-        return num_cams
+        return g_num_cams
 
     @property
     def debug(self):
-        return Debug
+        return g_Debug
+
+    @property
+    def dead_zone(self):
+        return g_dead_zone
 
     @property
     def credits_text(self):
-        return f"{Progname} {ProgVers}\n"+credits_text
+        return f"{g_Progname} {g_ProgVers}\n"+credits_text
 
     @property
     def brightness_button(self):

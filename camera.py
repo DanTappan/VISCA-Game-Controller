@@ -5,7 +5,7 @@ import socket
 from typing import Optional, Tuple
 
 #from visca_over_ip.exceptions import ViscaException, NoQueryResponse
-from exceptions import ViscaException, NoQueryResponse
+from visca_exceptions import ViscaException, NoQueryResponse
 
 SEQUENCE_NUM_MAX = 2 ** 32 - 1
 

@@ -2,9 +2,10 @@
 import platform
 import threading
 from typing import Optional
+from enum import IntEnum
 
-from exceptions import ViscaException
-from icons import controller_icon
+from visca_exceptions import ViscaException
+from file_paths import controller_icon
 import PySimpleGUI as Sg
 from camera import Camera
 # from exceptions import ViscaException
@@ -33,7 +34,7 @@ config: Config = Config()
 #
 # For now assume only a single controller, though the module can handle
 # multiple
-controller: Controller = Controller(longpress_limit=config.long_press_time)
+controller: Controller = Controller(long_press_limit=config.long_press_time, dead_zone = config.dead_zone)
 
 pygame_thread_lock: threading.Lock = threading.Lock()
 
@@ -220,7 +221,6 @@ def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> 
         print(f"joystick: {axis_position} -> {val}")
     return val
 
-focusing = False
 def handle_focus_near(axis: ControllerAxis):
     handle_focus(axis, False)
 
@@ -228,29 +228,24 @@ def handle_focus_far(axis: ControllerAxis):
     handle_focus(axis, True)
 
 def handle_focus(axis: ControllerAxis, far):
-    """ Handle a push/release on one of the focus related buttons
+    """ Handle a movement of a focus controlling joystick
         Either select autofocus, or start/stop the focus movement
     """
-    global cam, focusing
+    global cam
 
     if axis is None:
         return
 
-    joystick = axis.controller.get_pygame_joystick()
-    if joystick is None:
-        return
-
     if cam is None:
         return
-
     #
     # select manual focus and start camera movement
     cam.set_focus_mode('manual')
-    focus_pos = joystick.get_axis(axis.value)
+    focus_pos = axis.get_position()
     # convert -1:1 to 0:1
     focus_pos = (focus_pos + 1) / 2
     focus_speed = joy_pos_to_cam_speed(focus_pos, 'focus', far)
-    if focusing or focus_speed != 0:
+    if axis.moving or focus_speed != 0:
         if focus_speed == 0:
             # Stop camera fovus movement
             cam.manual_focus(0)
@@ -262,10 +257,10 @@ def handle_focus(axis: ControllerAxis, far):
             else:
                 msg = "Manual focus near: start"
             cam.manual_focus(focus_speed)
-            if not focusing:
+            if not axis.moving:
                 print(msg)
 
-    focusing = focus_speed != 0
+    axis.set_moving(focus_speed != 0)
 
 def handle_autofocus(button: ControllerButton):
     """
@@ -281,6 +276,59 @@ def handle_autofocus(button: ControllerButton):
 
     cam.set_focus_mode('auto')
     print("AutoFocus mode")
+
+class FocusEnum(IntEnum):
+    NEAR=0
+    FAR=1
+    AUTO=2
+# each button correspondence to a focus direction and a virtual axis position
+focus_map = {
+    8: (FocusEnum.FAR, .3),
+    1: (FocusEnum.FAR, .5),
+    2: (FocusEnum.FAR, .8),
+    3: (FocusEnum.AUTO, 0),
+    7: (FocusEnum.AUTO, 0),
+    6: (FocusEnum.NEAR, .3),
+    5: (FocusEnum.NEAR, .5),
+    4: (FocusEnum.NEAR, .8)
+}
+def handle_focus_hat(button: ControllerButton):
+    """
+    For devices that use a HAT to control the focus. Translate the current hat position (1-8) into
+    either a manual focus command or autofocus. Upward positions (8, 1, 2) map to  "focus far",
+    downward (4, 5, 6) to"focus near", side to side (3, 7) to autofocus
+    """
+    global cam
+
+    focus_command, focus_pos = focus_map[button.value]
+    if not button.is_down:
+        focus_pos = 0
+
+    # note that the position value for autofocus mode is 0,
+    # so we can fall through  and stop any ongoing manual
+    # focus movement before executing the autofocus command
+    far = focus_command == FocusEnum.FAR
+    focus_speed = joy_pos_to_cam_speed(focus_pos, 'focus', far)
+    if button.moving or focus_speed != 0:
+        cam.set_focus_mode('manual')
+        if focus_speed == 0:
+            # Stop camera focus movement
+            cam.manual_focus(0)
+            print("Manual focus: stop")
+            button.moving = False
+        else:
+            # start or change focus speed
+            if far:
+                msg = "Manual focus far: start"
+            else:
+                msg = "Manual focus near: start"
+            cam.manual_focus(focus_speed)
+            if not button.moving:
+                print(msg)
+                button.moving = True
+
+    if focus_command == FocusEnum.AUTO:
+        handle_autofocus(button)
 
 def handle_white_balance(button:ControllerButton):
     global cam
@@ -303,55 +351,45 @@ def handle_white_balance(button:ControllerButton):
         cam.white_balance_mode('one push trigger')
 
 
-moving = False
 def handle_pantilt(axis: ControllerAxis=None):
     """
     Handle motion of one of the pan/tilt axes.
     We need to set both at once, so we don't care which one moved
     """
-    global cam, moving
+    global cam
 
-    if axis is None or cam is None:
-        return
-
-    joystick = axis.controller.get_pygame_joystick()
-    if joystick is None:
+    if cam is None:
         return
 
     pan_axis = axis.controller.pan_axis
     tilt_axis = axis.controller.tilt_axis
 
-    pan_speed = joy_pos_to_cam_speed(joystick.get_axis(pan_axis.value),
+    pan_speed = joy_pos_to_cam_speed(pan_axis.get_position(),
                                  'pan', config.swap_pan)
-    tilt_speed = joy_pos_to_cam_speed(joystick.get_axis(tilt_axis.value),
+    tilt_speed = joy_pos_to_cam_speed(tilt_axis.get_position(),
                                   'tilt', config.invert_tilt)
     #
     # It is possible (depending on controller?) to get a string of axis events after the
     # joystick has returned to 0. Filter these out to avoid excess 'stop' commands
-    #
-    if moving or (pan_speed != 0) or (tilt_speed != 0):
+    # We cache the motion state in the pan_axis
+    if pan_axis.moving or (pan_speed != 0) or (tilt_speed != 0):
         cam.pantilt(pan_speed=pan_speed, tilt_speed=tilt_speed)
-    moving = (pan_speed != 0) or (tilt_speed != 0)
+    pan_axis.set_moving((pan_speed != 0) or (tilt_speed != 0))
 
 
-zooming = False
 def handle_zoom(axis:ControllerAxis):
     """
     Handle motion of the zoom axis
     """
-    global cam, zooming
+    global cam
 
     if axis is None or cam is None:
         return
 
-    joystick = axis.controller.get_pygame_joystick()
-    if joystick is None:
-        return
-
-    zoom = joy_pos_to_cam_speed(joystick.get_axis(axis.value), 'zoom')
-    if zooming or (zoom != 0):
+    zoom = joy_pos_to_cam_speed(axis.get_position(), 'zoom')
+    if axis.moving or (zoom != 0):
             cam.zoom(zoom)
-    zooming = zoom != 0
+    axis.set_moving(zoom != 0)
 
 last_power_level = 'unknown'
 #
@@ -385,8 +423,6 @@ def print_power_level(joystick: pygame.joystick.JoystickType, force=False, reset
         main_window['OUTPUT'](background_color=background)
     except IndexError:
         pass
-
-
 
 def handle_pygame_event(ev:pygame.event.Event):
     """
@@ -447,7 +483,8 @@ def main_loop():
                 return False
 
         elif event == 'Help':
-            Sg.popup(controller.help_text, title="Help", keep_on_top=True, line_width=80)
+            Sg.popup(f"{config.progname}({config.progvers}){controller.help_text}", title="Help", keep_on_top=True, line_width=70,
+                     image=controller.help_image)
 
         elif event == 'Credits':
             Sg.popup(config.credits_text, title="Credits", keep_on_top=True, line_width=80)
@@ -468,6 +505,7 @@ def main_loop():
                 ev = values[event]
             except IndexError:
                 ev = values[0]
+
             pygame_lock(lambda: handle_pygame_event(ev))
 
         elif event == 'POWER_POLL':
@@ -539,6 +577,7 @@ def pygame_task_end():
     global pygame_thread, pygame_task_exit
 
     pygame_task_exit = True
+    pygame.event.post(pygame.event.Event(pygame.NOEVENT)) # wake thread
     if pygame_thread is not None:
         pygame_thread.join()
     pygame_thread = None
@@ -552,11 +591,12 @@ def main():
     global cam, controller, main_window
 
     controller.set_callbacks(select_cam=handle_select_cam,
-                             focusfar=handle_focus_far,
-                             focusnear=handle_focus_near,
-                             brightnessup=handle_brightness_up,
-                             brightnessdown=handle_brightness_down,
-                             whitebalance=handle_white_balance,
+                             focus=handle_focus_hat,
+                             focus_far=handle_focus_far,
+                             focus_near=handle_focus_near,
+                             brightness_up=handle_brightness_up,
+                             brightness_down=handle_brightness_down,
+                             white_balance=handle_white_balance,
                              pantilt=handle_pantilt,
                              zoom=handle_zoom,
                              autofocus=handle_autofocus,
@@ -580,8 +620,6 @@ def main():
                         enable_close_attempted_event=True,
                         alpha_channel=0.75, keep_on_top=True,
                         icon=controller_icon())
-    if window_hidden:
-        window.hide()
 
     if UsePsgTray:
         tooltip = f"Control the {config.progname} app"
@@ -593,6 +631,8 @@ def main():
         tray = None
 
     window.finalize()
+    if window_hidden:
+        window.hide()
 
     # Start timer to poll power level
     window.timer_start(frequency_ms=POWER_POLL_FREQUENCY, repeating=True, key='POWER_POLL')
@@ -616,13 +656,13 @@ def main():
             except Exception as exc:
                 print(exc)
 
-    if tray:
-        tray.close()
-
     pygame_task_end()
 
     if not window.is_closed():
         window.close()
+
+    if tray:
+            tray.close()
     pygame.quit()
 
 
