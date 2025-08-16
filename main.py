@@ -8,6 +8,7 @@ from visca_exceptions import ViscaException
 from file_paths import controller_icon
 import PySimpleGUI as Sg
 from camera import Camera
+from osc import OSCTask
 # from exceptions import ViscaException
 # Use pygame-ce
 import pygame
@@ -155,6 +156,17 @@ def handle_select_cam(button: ControllerButton = None):
         cam_num = cam_num + 4
     if cam_num < 1 or cam_num > config.num_cams:
         print(f"Bad camera number {cam_num}")
+    else:
+        cam = connect_to_camera(cam_num)
+
+def osc_select_cam(cam_num):
+    """
+    Handle a select camera event via OSC
+    """
+    global cam
+
+    if cam_num < 1 or cam_num > config.num_cams:
+        print(f"OSC set camera: bad camera number {cam_num}")
     else:
         cam = connect_to_camera(cam_num)
 
@@ -510,6 +522,8 @@ def main_loop():
 
         elif event == 'POWER_POLL':
             print_power_level(controller.get_pygame_joystick())
+        elif event == "OSC_SET_CAMERA":
+            pygame_lock(lambda: osc_select_cam(values['OSC_SET_CAMERA']))
 
 
 pygame_task_exit = False
@@ -582,7 +596,6 @@ def pygame_task_end():
         pygame_thread.join()
     pygame_thread = None
 
-
 def main():
     """
     Main program
@@ -645,6 +658,8 @@ def main():
 
     pygame_task_start(window)
 
+    osc_task = OSCTask(window)
+
     while True:
         if config.debug:
             if not main_loop():
@@ -662,7 +677,10 @@ def main():
         window.close()
 
     if tray:
-            tray.close()
+        tray.close()
+
+    osc_task.shutdown()
+
     pygame.quit()
 
 

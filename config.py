@@ -7,7 +7,7 @@ import PySimpleGUI as Sg
 g_Debug = False
 
 g_Progname = "VISCA Game Controller"
-g_ProgVers = "1.0beta1"
+g_ProgVers = "1.0beta2"
 
 g_num_cams = 8
 cam_ips = ['127.0.0.1']*g_num_cams
