@@ -241,6 +241,11 @@ In order to implement these functions, the program assumes that one page of butt
 
 A [sample Companion configuration file](Sample.companionconfig) is included in the distribution, which supports the Blackmagic ATEM, OBS, and Vmix (select page 97 in the application Config dialog for the ATEM, 98 for Vmix, and 99 for OBS)
 
+## OSC interface
+
+The program includes an [Open Sound Control](https://en.wikipedia.org/wiki/Open_Sound_Control) (OSC) server, to allow external control. Currently  the following OSC commands are supported
+- /setcam/*number* ( where *number* is a string): selects the indicated camera
+  
 ## Python Packages used
 - numpy
 - pillow
@@ -249,6 +254,7 @@ A [sample Companion configuration file](Sample.companionconfig) is included in t
 - pyinstaller
 - PySimpleGUI-4-foss
 - pystray
+- python-osc
 
 ## PyCharm pyinstaller settings
 
