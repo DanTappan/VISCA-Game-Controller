@@ -23,7 +23,7 @@ This is intended to be used as part of a livestreaming video system consisting o
   - the [LogiTech Extreme 3D PRO](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.html) Flight Simulator joystick.
 - PTZ cameras supporting SONY VISCA protocol and [NDI](https://ndi.video/). I have tested with cameras from [AVKANS](https://www.amazon.com/AVKANS-Tracking-Camera-Streaming-Worship/dp/B0CM91M5LN), Birddog ([P100](https://birddog.tv/p100-overview/) and [X1](https://birddog.tv/x1-overview/)), and [OBSBOT](https://www.obsbot.com/obsbot-tail-air-streaming-camera)
 - [BlackMagic Design ATEM](https://www.blackmagicdesign.com/products/atemmini), [VMix](https://www.vmix.com/) or [OBS](https://obsproject.com/) for camera streaming
-- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets (this is not required, but is useful for dynamically selecting cameras without requiring reconfiguration of the same Controller app)
+- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets (this is not required, but is useful for dynamically selecting cameras without requiring reconfiguration of the Game Controller app)
 - [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and switching the Preview to Program 
 
 For example:
