@@ -2,11 +2,10 @@
 
 
 a = Analysis(
-    ['C:\\Users\\dan\\PycharmProjects\\VISCA-Game-Controller\\main.py'],
+    ['C:\\Users\\dan\\PycharmProjects\\VISCA-Game-Controller\\VISCA-Game-Controller.spec'],
     pathex=[],
     binaries=[],
-    datas=[('VISCA-Game-Controller.png', '.'), ('VISCA-Game-Controller.ico', '.'),
-            ('GameController.png', '.'), ('LogitechJoystick.png', '.')],
+    datas=[('VISCA-Game-Controller.png', '.'), ('VISCA-Game-Controller.ico', '.')],
     hiddenimports=[],
     hookspath=['.'],
     hooksconfig={},
