@@ -283,7 +283,7 @@ This allows Companion to provide functions beyond those supported by the buttons
 
 ## PyCharm pyinstaller settings
 
-The following settings for pyinstaller under PyCharm work to build the program. 
+The following settings for pyi-makespec under PyCharm work to build the program. 
 
 Program (run on main program file):
 ````
