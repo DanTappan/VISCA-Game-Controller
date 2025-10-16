@@ -16,6 +16,7 @@ from numpy import interp
 from config import Config
 from companion import Companion
 from controller import Controller, ControllerAxis, ControllerButton
+from viscarelay import ViscaRelay
 
 Windows = platform.system() == 'Windows'
 
@@ -30,8 +31,10 @@ if Windows and UsePsgTray:
 
 cam: Optional[Camera] = None
 main_window:Optional[Sg.Window] = None
-bitfocus: Companion = Companion()
 config: Config = Config()
+bitfocus: Companion = Companion()
+visca_relay: ViscaRelay = ViscaRelay(rcv_port=config.visca_relay_port)
+
 #
 # For now assume only a single controller, though the module can handle
 # multiple
@@ -132,6 +135,10 @@ def connect_to_camera(cam_num) -> Camera:
         # Bitfocus Companion (row 0, camera_number), should be configured to set Preview
         # to the selected camera
         bitfocus.pushbutton(* config.companion(0, cam_num))
+
+        # Switch the VISCA relay to the new camera
+        visca_relay.ptz_set(ptz=cam_ip, ptz_port=cam_port)
+
     print(f"Camera {cam_name}")
 
     if UsePsgTray:

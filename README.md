@@ -7,7 +7,7 @@ This program was originally based on the project https://github.com/Internationa
 - hot plugin/removal of controllers
 - support for up to 8 cameras (for use with [Blackmagic Design ATEM ISO Extreme](https://www.blackmagicdesign.com/products/atemmini))
 - integration with BitFocus Companion to automatically put selected cameras into the preview/program window
-- additional functions for minimal whitebalance control (One Push, Auto)
+- additional functions for minimal white balance control (One Push, Auto)
 - some rearrangement of functions between buttons/joysticks/hats on the controller based on the principle of "it seemed to me to work better that way"
 - bug fixes and hardening
 
@@ -23,7 +23,7 @@ This is intended to be used as part of a livestreaming video system consisting o
   - the [LogiTech Extreme 3D PRO](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.html) Flight Simulator joystick.
 - PTZ cameras supporting SONY VISCA protocol and [NDI](https://ndi.video/). I have tested with cameras from [AVKANS](https://www.amazon.com/AVKANS-Tracking-Camera-Streaming-Worship/dp/B0CM91M5LN), Birddog ([P100](https://birddog.tv/p100-overview/) and [X1](https://birddog.tv/x1-overview/)), and [OBSBOT](https://www.obsbot.com/obsbot-tail-air-streaming-camera)
 - [BlackMagic Design ATEM](https://www.blackmagicdesign.com/products/atemmini), [VMix](https://www.vmix.com/) or [OBS](https://obsproject.com/) for camera streaming
-- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets (this is not required, but is useful for dynamically selecting coameras without requiring reconfiguration of the same Controller app)
+- my [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) program for selecting between NDI based cameras and forwarding VISCA packets (this is not required, but is useful for dynamically selecting cameras without requiring reconfiguration of the same Controller app)
 - [Bitfocus Companion](https://bitfocus.io/companion), used for mapping the selected camera to the Preview window and switching the Preview to Program 
 
 For example:
@@ -55,22 +55,29 @@ The window provides a dropdown menu with the following commands
 - "Credits" - displays credits text
 - "Exit" - closes the program
 
-Right clicking on the System Tray icon provides a popup menu with the following commands
+Right-clicking on the System Tray icon provides a popup menu with the following commands
 
 ![Popup menu](screenshots/VISCA-controller-popup-menu.png)
 
 - "Show Window" - restores the feedback window after hiding
-- "Center Window" - in case the window somehow gets moved offscreem, this moves it back to the center of the screen
+- "Center Window" - in case the window somehow gets moved off-screen, this moves it back to the center of the screen
 - "Exit" - closes the program
 
 The Configuration dialog allows setting the following parameters:
 
 ![Configuration Dialog](screenshots/VISCA-controller-configure.png)
 
-- "Camera" and "Port" set the camera address and VISCA port for each cameras. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
-- "Long Press" - the timeout value for a long press vs a short press of a button. The program must be restarted for a change to take effect.
-- "Dead Zone". This sets the size of the center dead zone, where the joysticks will not respond. This is useful for noisy analog joysticks that do not zero. It is also useful for the *Logitech Extreme 3D PRO*, where moving the stick tends to also twist the stick (Zoom function). Setting the value in the configuration dialog will override any default values selected by the program. Program restart is required for a change to taker effect.
-- "Bitfocus Companion Page" - selects the page used for the Bitfocus Companion integration functions. See section [Bitfocus Companion Interface](#bitfocus-companion-interface).
+- "Camera" and "Port" set the camera address and VISCA port for each camera. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
+- "Long Press" - the timeout value for a long press vs a short press of a button.
+The program must be restarted for a change to take effect.
+- "Dead Zone". This sets the size of the center dead zone, where the joysticks will not respond.
+This is useful for noisy analog joysticks that do not zero properly. 
+It is also useful for the *Logitech Extreme 3D PRO*, where moving the stick tends to also twist the stick (Zoom function).
+Setting the value in the configuration dialog will override any default values selected by the program.
+Program restart is required for a change to take effect.
+- "Bitfocus Companion Host" and "Bitfocus Companion Page" select the address of the machine running BitFocus Companion and
+the page used for the Bitfocus Companion trigger functions.
+See section [Bitfocus Companion Integrations](#bitfocus-companion-integrations).
 - "Invert Tilt" - reverses the sense of the tilt joystick control
 - "Swap Pan" - reverses the sense of the pan joystick control
 - "Debug Mode" - enables some debugging functions
@@ -82,7 +89,7 @@ The program supports the following functions using a game controller
 
 ![Game Controller](GameController.png)
 
-<Table>
+<table>
 <tr>
 <td><b>Function</b></td>
 <td><b>Controller input</b></td>
@@ -111,6 +118,7 @@ Zoom the camera
 Right joystick
 </td>
 </tr>
+<tr>
 <td>
 Autofocus mode
 </td>
@@ -128,7 +136,7 @@ Right hand button on controller, often labeled 'back'
 </tr>
 <tr>
 <td>
-Manual Focus Near/Far. Push the left trigger to start focusing nearer (as in, closer to the operator), release to stop. Similarly the right trigger focuses further away.
+Manual Focus Near/Far. Push the left trigger to start focusing nearer (as in, closer to the operator), release to stop. Similarly, the right trigger focuses further away.
 </td>
 <td>
 Left and right trigger
@@ -158,7 +166,7 @@ Preset. The 8 possible directions on the D-pad/"Hat" each select one of presets 
 </tr>
 </table>
 
-The Program supports the following functions using a Flight Simulator Joystick, such as as the [Logitech Extreme 3D Pro](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.963290-0403.html)
+The Program supports the following functions using a Flight Simulator Joystick, such as the [Logitech Extreme 3D Pro](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.963290-0403.html)
 
 ![Logitech Joystick](LogitechJoystick.png)
 
@@ -231,21 +239,39 @@ Presets 1-6
 </tr>
 </table>
 
-## Bitfocus Companion interface
+## Bitfocus Companion integrations
+The following features support interactions between the application and [Bitfocus Companion](https://bitfocus.io/companion)
 
-To implement the features of automatically putting the selected camera into the preview window, and the "Preview to Program" function, the program requires that BitFocus Companion be running on the machine, with the UDP Raw Socket API configured. See the [BitFocus Companion documentation](https://user.bitfocus.io/docs/companion).
+### Companion triggers
 
-In order to implement these functions, the program assumes that one page of buttons in Bitfocus Companion (defaults to page 99) are configured as follows:
-- Row 0, columns 1-8 : Select inputs 1-8 as the Preview
+To implement the features of automatically putting the selected camera into the preview window, and the 
+"Preview to Program" function, the program requires a connection to an instance of BitFocus Companion. 
+For this to work, the Companion instance must be configured to support the UDP Raw Socket API, and to allow connections
+from the machine running the Game Controller application. 
+See the [BitFocus Companion documentation](https://user.bitfocus.io/docs/companion).
+
+In order to implement these functions, the program assumes that one page of buttons in Bitfocus Companion are configured as follows:
+- Row 0, columns 1-8 : Select camera 1-8 as the Preview
 - Row 1, column 1 : Fade/Cut the Preview to the Program
 
-A [sample Companion configuration file](Sample.companionconfig) is included in the distribution, which supports the Blackmagic ATEM, OBS, and Vmix (select page 97 in the application Config dialog for the ATEM, 98 for Vmix, and 99 for OBS)
+The Companion host address and the page containing the trigger buttons can be configured using the Configuration dialog
 
-## OSC interface
+### OSC Interface
 
-The program includes an [Open Sound Control](https://en.wikipedia.org/wiki/Open_Sound_Control) (OSC) server, to allow external control. Currently  the following OSC commands are supported
-- /setcam/*number* ( where *number* is a string): selects the indicated camera
-  
+To support actions triggered by Companion, the application provides a UDP
+[Open Sound Control(OSC)](https://en.wikipedia.org/wiki/Open_Sound_Control) on port 9999. 
+Currently, the supported commands are:
+* /setcam/_number_ to select the indicated camera. This supports using Companion buttons to select cameras.
+
+### VISCA Relay
+
+The VISCA Relay runs on UDP port 10000 and allows an appropriately configured Companion "SONY VISCA" connection to send
+VISCA commands to the currently selected camera. 
+Specifically, any VISCA command received on port 10000 will be forwarded to the current camera, and the camera's
+response will be forwarded back.
+
+This allows Companion to provide functions beyond those supported by the buttons on the current Game Controller or Joystick.
+
 ## Python Packages used
 - numpy
 - pillow
@@ -254,7 +280,6 @@ The program includes an [Open Sound Control](https://en.wikipedia.org/wiki/Open_
 - pyinstaller
 - PySimpleGUI-4-foss
 - pystray
-- python-osc
 
 ## PyCharm pyinstaller settings
 

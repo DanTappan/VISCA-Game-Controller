@@ -9,12 +9,18 @@
 import socket
 
 class Companion:
-    def __init__(self, host:str="127.0.0.1", port:int=16759):
+    def __init__(self,  port:int=16759):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        address = (host, port)
-        self.socket.connect(address)
+        self.port = port
 
-    def pushbutton(self, page:int, row:int, column:int):
+
+    def pushbutton(self,  page:int, row:int, column:int, host='127.0.0.1'):
         buffer = f"LOCATION {page}/{row}/{column} PRESS"
-        self.socket.send(buffer.encode('utf-8'))
+        address = (host, self.port)
+        try:
+            self.socket.sendto(buffer.encode('utf-8'), address)
+        except OSError:
+            print("companion send failed")
+
+
 

@@ -7,11 +7,13 @@ import PySimpleGUI as Sg
 g_Debug = False
 
 g_Progname = "VISCA Game Controller"
-g_ProgVers = "1.0beta2"
+g_ProgVers = "1.0beta4"
 
 g_num_cams = 8
 cam_ips = ['127.0.0.1']*g_num_cams
 cam_ports = [52381]*g_num_cams
+
+g_visca_relay_port = 10000  # currently hardwired
 
 sensitivity_tables = {
     'pan': {'joy': [0, 0.15, 0.2, 0.3, 0.5, 0.8, 0.9, 1], 'cam': [0, 0, 1, 2, 6,  8, 12, 18]},
@@ -28,10 +30,12 @@ g_dead_zone = None
 # Bitfocus companion interface
 # the trigger commands are assumed to all be on one page (currently defaults to 99)
 g_companion_page = 99
+g_companion_host = "127.0.0.1"
 
 def configure():
     """ Configuration dialog """
-    global g_long_press_time, g_Debug, g_companion_page, g_swap_pan, g_invert_tilt, g_dead_zone
+    global g_long_press_time, g_Debug, g_companion_page, g_companion_host, g_swap_pan, g_invert_tilt
+    global g_dead_zone
 
     layout = [[Sg.Text("Camera", size=20), Sg.Text("Port")],
               [Sg.Input(default_text=cam_ips[0], key='CAM1', size=20),
@@ -51,14 +55,17 @@ def configure():
               [Sg.Input(default_text=cam_ips[7], key='CAM8', size=20),
                Sg.Input(default_text=str(cam_ports[7]), key='PORT8', size=8)],
               [Sg.Text('Long Press (restart required)'),
-               Sg.Input(default_text=str(g_long_press_time), key='-LONG-PRESS-', size=4), Sg.Text('seconds')],
+                Sg.Input(default_text=str(g_long_press_time), key='-LONG-PRESS-', size=4),
+                Sg.Text('seconds')],
               [Sg.Text('Joystick dead zone (restart required)'),
                Sg.Input(default_text=str(g_dead_zone or ''), key='-DEAD-ZONE-', size=4)],
               [Sg.Text('Bitfocus Companion Page '),
-               Sg.Input(default_text=str(g_companion_page), key='-COMPANION-PAGE-', size=4)],
+               Sg.Input(default_text=str(g_companion_page), key='-COMPANION-PAGE-', size=4),
+               Sg.Text('Bitfocus Companion Host '),
+               Sg.Input(default_text=g_companion_host, key = '-COMPANION-HOST-', size = 15)],
               [Sg.Checkbox('Invert Tilt', default=g_invert_tilt, key='-INVERT-TILT-'),
-               Sg.Checkbox('Swap Pan', default=g_swap_pan, key='-SWAP-PAN-'),
-               Sg.Checkbox('Debug Mode', default=g_Debug, key='-DEBUG-')],
+                Sg.Checkbox('Swap Pan', default=g_swap_pan, key='-SWAP-PAN-'),
+                Sg.Checkbox('Debug Mode', default=g_Debug, key='-DEBUG-')],
               [Sg.Button('Relay', tooltip='Fill in values for VISCA Relay'),
                Sg.Button('Save'),
                Sg.Button('Cancel')]
@@ -96,8 +103,10 @@ def configure():
             except ValueError:
                 g_dead_zone = None
             g_companion_page = int(values['-COMPANION-PAGE-'])
+            g_companion_host = values['-COMPANION-HOST-']
             Sg.user_settings_set_entry('-long_press_time-', g_long_press_time)
             Sg.user_settings_set_entry('-companion_page-', g_companion_page)
+            Sg.user_settings_set_entry('-companion_host-', g_companion_host)
             Sg.user_settings_set_entry('-invert-tilt-', g_invert_tilt)
             Sg.user_settings_set_entry('-swap-pan-', g_swap_pan)
             Sg.user_settings_set_entry('-debug-', g_Debug)
@@ -114,7 +123,8 @@ def configure():
 
 def load_config():
     """ Load the saved configuration values at startup """
-    global g_long_press_time, g_invert_tilt, g_swap_pan, g_companion_page, g_Debug, g_dead_zone
+    global g_long_press_time, g_invert_tilt, g_swap_pan, g_companion_page
+    global g_companion_host, g_Debug, g_dead_zone
 
     for x in range(g_num_cams):
         cam_ips[x] = Sg.user_settings_get_entry('-CAM'+str(x+1)+'-', '')
@@ -122,6 +132,7 @@ def load_config():
         cam_ports[x] = port
 
     g_companion_page = Sg.user_settings_get_entry('-companion_page-', 99)
+    g_companion_host = Sg.user_settings_get_entry('-companion_host-', '127.0.0.1')
     g_long_press_time = Sg.user_settings_get_entry('-long_press_time-', .5)
     g_invert_tilt = Sg.user_settings_get_entry('-invert-tilt-', False)
     g_swap_pan = Sg.user_settings_get_entry('-swap-pan-', False)
@@ -155,7 +166,8 @@ Icon based on:
  """
 
 class Config:
-    global g_dead_zone, g_Debug, g_Progname, g_ProgVers, g_invert_tilt, g_swap_pan, g_num_cams, g_long_press_time
+    global g_dead_zone, g_Debug, g_Progname, g_ProgVers, g_invert_tilt, g_swap_pan, g_num_cams
+    global g_long_press_time, g_visca_relay_port
 
     def __init__(self):
         self.mappings = None
@@ -165,7 +177,7 @@ class Config:
 
     @staticmethod
     def companion(row:int, column:int):
-        return [g_companion_page, row, column]
+        return [g_companion_page, row, column, g_companion_host]
 
     @staticmethod
     def sensitivity(table: str):
@@ -212,6 +224,10 @@ class Config:
     @property
     def dead_zone(self):
         return g_dead_zone
+
+    @property
+    def visca_relay_port(self):
+        return g_visca_relay_port
 
     @property
     def credits_text(self):
