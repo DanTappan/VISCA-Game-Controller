@@ -239,6 +239,35 @@ Presets 1-6
 </tr>
 </table>
 
+The program supports the following functions using a simple 4 axis joystick.
+
+Other functions can be provided by Bitfocus Companion, via the OSC interface or the VISCA Relay
+![4axis Joystick](4axis.png)
+<Table>
+<tr>
+<td>
+Pan/Tilt the camera
+</td>
+<td>
+Joystick left-right(pan) or up-down(tilt)
+</td>
+</tr>
+<tr>
+<td>
+Zoom the camera
+</td>
+<td>Twist the joystick</td>
+</tr>
+<tr>
+<td>
+Preview to Program. If Bitfocus Companion is running (and properly configured) then the Preview window is swapped with the Program window
+</td>
+<td>
+Top button
+</td>
+</tr>
+</table>
+
 ## Bitfocus Companion integrations
 The following features support interactions between the application and [Bitfocus Companion](https://bitfocus.io/companion)
 

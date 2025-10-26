@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['C:\\Users\\dan\\PycharmProjects\\VISCA-Game-Controller\\VISCA-Game-Controller.spec'],
+    ['C:\\Users\\dan\\PycharmProjects\\VISCA-Game-Controller\\main.py'],
     pathex=[],
     binaries=[],
     datas=[('VISCA-Game-Controller.png', '.'), ('VISCA-Game-Controller.ico', '.')],

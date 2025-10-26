@@ -9,6 +9,7 @@ from file_paths import controller_icon
 import PySimpleGUI as Sg
 from camera import Camera
 from osc import OSCTask
+
 # from exceptions import ViscaException
 # Use pygame-ce
 import pygame
@@ -17,6 +18,7 @@ from config import Config
 from companion import Companion
 from controller import Controller, ControllerAxis, ControllerButton
 from viscarelay import ViscaRelay
+from win_print import win_print, win_print_init
 
 Windows = platform.system() == 'Windows'
 
@@ -35,10 +37,12 @@ config: Config = Config()
 bitfocus: Companion = Companion()
 visca_relay: ViscaRelay = ViscaRelay(rcv_port=config.visca_relay_port)
 
+
 #
 # For now assume only a single controller, though the module can handle
 # multiple
-controller: Controller = Controller(long_press_limit=config.long_press_time, dead_zone = config.dead_zone)
+controller: Controller = Controller(long_press_limit=config.long_press_time,
+                                    dead_zone=config.dead_zone)
 
 pygame_thread_lock: threading.Lock = threading.Lock()
 
@@ -98,13 +102,13 @@ def handle_brightness(button: ControllerButton, up):
         cam.autoexposure_mode('auto')
         if up:
             cam.increase_exposure_compensation()
-            print("increase brightness")
+            win_print("increase brightness")
         else:
             cam.decrease_exposure_compensation()
-            print("decrease brightness")
+            win_print("decrease brightness")
 
     except ViscaException:
-        print("brightness change failed")
+        win_print("brightness change failed")
 
 def connect_to_camera(cam_num) -> Camera:
     """Connects to the camera specified by cam_index and returns it"""
@@ -124,7 +128,7 @@ def connect_to_camera(cam_num) -> Camera:
         try:
             newcam = Camera(cam_ip, cam_port)
         except Exception as exc:
-            print(f'Camera {cam_num} not available:', exc)
+            win_print(f'Camera {cam_num} not available: {exc}')
             pass
 
     cam = newcam
@@ -139,7 +143,7 @@ def connect_to_camera(cam_num) -> Camera:
         # Switch the VISCA relay to the new camera
         visca_relay.ptz_set(ptz=cam_ip, ptz_port=cam_port)
 
-    print(f"Camera {cam_name}")
+    win_print(f'Camera {cam_name}')
 
     if UsePsgTray:
         tray = win.metadata
@@ -162,7 +166,7 @@ def handle_select_cam(button: ControllerButton = None):
     if button.long_press:
         cam_num = cam_num + 4
     if cam_num < 1 or cam_num > config.num_cams:
-        print(f"Bad camera number {cam_num}")
+        win_print(f"Bad camera number {cam_num}")
     else:
         cam = connect_to_camera(cam_num)
 
@@ -173,7 +177,7 @@ def osc_select_cam(cam_num):
     global cam
 
     if cam_num < 1 or cam_num > config.num_cams:
-        print(f"OSC set camera: bad camera number {cam_num}")
+        win_print(f"OSC set camera: bad camera number {cam_num}")
     else:
         cam = connect_to_camera(cam_num)
 
@@ -184,7 +188,7 @@ def handle_prev2prog(button: ControllerButton=None):
     if button is None or not button.is_down:
         return
     # Bitfocus companion row 1, column 1 should be configured to fade Preview to Program
-    print("Preview to Program")
+    win_print("Preview to Program")
     bitfocus.pushbutton(*config.companion(1, 1))
 
 
@@ -210,13 +214,13 @@ def handle_preset(button: ControllerButton):
     preset_num = button.value
     try:
         if button.long_press:
-            print(f"Setting preset {preset_num}")
+            win_print(f"Setting preset {preset_num}")
             cam.save_preset(preset_num-1)
         else:
-            print(f"Preset {preset_num}")
+            win_print(f"Preset {preset_num}")
             cam.recall_preset(preset_num-1)
     except ViscaException:
-        print("Preset failed")
+        win_print("Preset failed")
 
 
 def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> int:
@@ -237,7 +241,7 @@ def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> 
         interp(abs(axis_position), table['joy'], table['cam'])
     )
     if config.debug:
-        print(f"joystick: {axis_position} -> {val}")
+        win_print(f"joystick: {axis_position} -> {val}")
     return val
 
 def handle_focus_near(axis: ControllerAxis):
@@ -268,7 +272,7 @@ def handle_focus(axis: ControllerAxis, far):
         if focus_speed == 0:
             # Stop camera fovus movement
             cam.manual_focus(0)
-            print("Manual focus: stop")
+            win_print("Manual focus: stop")
         else:
             # start or change focus speed
             if far:
@@ -277,7 +281,7 @@ def handle_focus(axis: ControllerAxis, far):
                 msg = "Manual focus near: start"
             cam.manual_focus(focus_speed)
             if not axis.moving:
-                print(msg)
+                win_print(msg)
 
     axis.set_moving(focus_speed != 0)
 
@@ -294,7 +298,7 @@ def handle_autofocus(button: ControllerButton):
         return
 
     cam.set_focus_mode('auto')
-    print("AutoFocus mode")
+    win_print("AutoFocus mode")
 
 class FocusEnum(IntEnum):
     NEAR=0
@@ -333,7 +337,7 @@ def handle_focus_hat(button: ControllerButton):
         if focus_speed == 0:
             # Stop camera focus movement
             cam.manual_focus(0)
-            print("Manual focus: stop")
+            win_print("Manual focus: stop")
             button.moving = False
         else:
             # start or change focus speed
@@ -343,7 +347,7 @@ def handle_focus_hat(button: ControllerButton):
                 msg = "Manual focus near: start"
             cam.manual_focus(focus_speed)
             if not button.moving:
-                print(msg)
+                win_print(msg)
                 button.moving = True
 
     if focus_command == FocusEnum.AUTO:
@@ -362,10 +366,10 @@ def handle_white_balance(button:ControllerButton):
     # Short press == ONE PUSH white balance
     # Long press == Auto
     if button.long_press:
-        print("Auto white balance")
+        win_print("Auto white balance")
         cam.white_balance_mode('auto')
     else:
-        print("One Push white balance")
+        win_print("One Push white balance")
         cam.white_balance_mode('one push')
         cam.white_balance_mode('one push trigger')
 
@@ -435,7 +439,7 @@ def print_power_level(joystick: pygame.joystick.JoystickType, force=False, reset
 
     if power != 'unknown' and power != 'wired':
         if force or power != last_power_level:
-            print(f'Joystick battery {power}')
+            win_print(f'Joystick battery {power}')
             last_power_level = power
     try:
         background = power_to_background[power]
@@ -453,10 +457,10 @@ def handle_pygame_event(ev:pygame.event.Event):
     if ev.type == pygame.JOYDEVICEADDED or ev.type == pygame.JOYDEVICEREMOVED:
         joystick = controller.get_pygame_joystick()
         if joystick is not None:
-            print(joystick.get_name())
+            win_print(f'Controller: {joystick.get_name()}')
             print_power_level(joystick, True, True)
         else:
-            print("No joystick")
+            win_print("No controller")
     else:
         controller.pygame_event(ev)
 
@@ -481,8 +485,10 @@ def main_loop():
             except IndexError:
                 event = values[0]
 
-        # Handle Tray events first
-        if event in ('Show Window', 'Center Window', Sg.EVENT_SYSTEM_TRAY_ICON_ACTIVATED,
+        if event == '-PRINT-':
+            Sg.cprint(values[event], window=win, key="OUTPUT", c=('black', 'white'))
+
+        elif event in ('Show Window', 'Center Window', Sg.EVENT_SYSTEM_TRAY_ICON_ACTIVATED,
                      Sg.EVENT_SYSTEM_TRAY_ICON_DOUBLE_CLICKED):
             win.hide()  # in case it was minimized, not hidden
             if event == 'Center Window':
@@ -547,7 +553,7 @@ def pygame_task(win):
     pygame.display.init()
     pygame.joystick.init()
     if pygame.joystick.get_count() == 0:
-        print("No Joystick")
+        win_print("No Joystick")
 
     while not pygame_task_exit:
         # noinspection PyBroadException
@@ -577,8 +583,6 @@ def pygame_task(win):
         if pass_event:
             win.write_event_value('PYGAME_EVENT', ev)
 
-#   pygame.display.quit()
-
 
 def pygame_task_start(win: Sg.Window):
     """
@@ -588,7 +592,6 @@ def pygame_task_start(win: Sg.Window):
     global pygame_thread
 
     pygame_thread = win.start_thread(lambda: pygame_task(win), None)
-
 
 def pygame_task_end():
     """
@@ -622,15 +625,24 @@ def main():
                              autofocus=handle_autofocus,
                              prev2prog=handle_prev2prog,
                              preset=handle_preset)
-
     settings = Sg.UserSettings()
     window_location = settings.get('-location-')
     window_hidden = settings.get('-hidden-')
 
     if config.debug:
-        output = Sg.Output(size=(50, 25), key='OUTPUT') # bigger window while debugging
+        # Bigger window when debugging
+        output_size = (50, 25)
     else:
-        output = Sg.Output(size=(30, 5), key='OUTPUT')
+        output_size = (30, 5)
+
+    output = Sg.Multiline(  reroute_cprint=True,
+                            reroute_stderr=False,
+                            reroute_stdout=False,
+                            autoscroll=True,
+                            auto_refresh=True,
+                            write_only=True,
+                            size=output_size,
+                            key='OUTPUT')
 
     menu_def = [['Menu', ['Minimize', 'Configure', 'Help', 'Credits', 'Exit']]]
     layout = [[Sg.Menu(menu_def)], [output]]
@@ -653,13 +665,14 @@ def main():
     window.finalize()
     if window_hidden:
         window.hide()
+    win_print_init(window)
 
     # Start timer to poll power level
     window.timer_start(frequency_ms=POWER_POLL_FREQUENCY, repeating=True, key='POWER_POLL')
 
     main_window = window
 
-    print(f'{config.progname}({config.progvers})')
+    win_print(f'{config.progname}({config.progvers})')
 
     cam = connect_to_camera(1)
 
@@ -676,7 +689,7 @@ def main():
                 if not main_loop():
                     break
             except Exception as exc:
-                print(exc)
+                win_print(exc)
 
     pygame_task_end()
 

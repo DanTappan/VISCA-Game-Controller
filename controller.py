@@ -9,6 +9,7 @@ import pygame
 import pygame.event
 import platform
 from file_paths import file_path
+from win_print import win_print
 
 Windows = platform.system() == 'Windows'
 Linux = platform.system() == 'Linux'
@@ -71,6 +72,17 @@ Presets 1-6
                 Base buttons. 
                 short press: recall
                 long press: set
+"""
+
+help_text_homebrew = """
+Control PTZ cameras using 3 axis joystick
+
+Pan & Tilt     
+                Joystick L/R/U/D
+Zoom
+                Twist joystick
+Fade Preview to Program 
+                Top button
 """
 #
 # Types of controls
@@ -183,10 +195,28 @@ class JoystickControllerInput(BaseControllerInput):
         super().set("HELP", "string", help_text_joystick)
         super().set("HELP_IMAGE", "file", 'LogitechJoystick.png')
         # Dead zone for filtering axis events
-        # we need this because the Logitech joystick tends to moves the twist (zoom) axis
+        # we need this because the Logitech joystick tends to move the twist (zoom) axis
         # when moving left or right
         super().set("DEAD_ZONE", "number", 0.3)
 
+class HomebrewControllerInput(BaseControllerInput):
+    def __init__(self):
+        super().__init__()
+    # only the one button for now
+
+     #   No buttons for Brightness
+
+        super().set("PREV2PROG", "button", 0)  # top button
+
+        # Axes
+        super().set("PAN", "axis", 0)
+        super().set("TILT", "axis", 1)
+        super().set("ZOOM", "axis", 2)
+        super().set("INVERT_ZOOM", "number", 1)
+
+        super().set("HELP", "string", help_text_homebrew)
+        super().set("HELP_IMAGE", "file", '4axis.png')
+        super().set("DEAD_ZONE", "number", .1)
 
 class Controller:
     def __init__(self, doubleclick_limit=0, long_press_limit=2, dead_zone=None):
@@ -220,7 +250,9 @@ class Controller:
 
     def set_callbacks(self, select_cam=None,  focus = None, focus_near=None, focus_far=None,
                     brightness_up=None, brightness_down=None,
-                      pantilt=None, zoom=None, white_balance=None, autofocus=None, prev2prog=None, preset=None):
+                      pantilt=None, zoom=None, white_balance=None, autofocus=None,
+                      prev2prog=None, preset=None
+                      ):
         if select_cam is not None:
             self.button_funcs[ControlFunc.CAMERA_SELECT] = select_cam
         if focus is not None:
@@ -282,11 +314,14 @@ def controller_type(controller: Controller):
 
     num_axes = joystick.get_numaxes()
     if num_axes == 6:
-        print("Game Controller")
+        # win_print("Game Controller")
         return GameControllerInput()
     elif num_axes == 4:
-        print("Flight Controller Joystick")
+        # win_print("Flight Controller Joystick")
         return JoystickControllerInput()
+    elif num_axes == 3:
+        # win_print("3 axis joystick")
+        return HomebrewControllerInput()
     else:
         return None
 
@@ -437,10 +472,16 @@ def setup_controller(controller: Controller):
     controller.set_help_text(device.value("HELP"))
     controller.set_help_image(file_path(device.value("HELP_IMAGE")))
 
-    controller.buttons[device.value("CAMERA_SELECT_1")] =  ControllerButton(controller, ControlFunc.CAMERA_SELECT, 1)
-    controller.buttons[device.value("CAMERA_SELECT_2")] = ControllerButton(controller, ControlFunc.CAMERA_SELECT, 2)
-    controller.buttons[device.value("CAMERA_SELECT_3")] = ControllerButton(controller, ControlFunc.CAMERA_SELECT, 3)
-    controller.buttons[device.value("CAMERA_SELECT_4")] = ControllerButton(controller, ControlFunc.CAMERA_SELECT, 4)
+    try:
+        controller.buttons[device.value("CAMERA_SELECT_1")] =  ControllerButton(controller,
+                                                                                ControlFunc.CAMERA_SELECT, 1)
+        controller.buttons[device.value("CAMERA_SELECT_2")] = ControllerButton(controller,
+                                                                               ControlFunc.CAMERA_SELECT, 2)
+        controller.buttons[device.value("CAMERA_SELECT_3")] = ControllerButton(controller,
+                                                                               ControlFunc.CAMERA_SELECT, 3)
+        controller.buttons[device.value("CAMERA_SELECT_4")] = ControllerButton(controller, ControlFunc.CAMERA_SELECT, 4)
+    except TypeError:
+        pass
 
     t = device.type("BRIGHTNESS_UP")
     if t == "button":
@@ -456,8 +497,15 @@ def setup_controller(controller: Controller):
         v = device.value("AUTO_FOCUS")
         controller.buttons[v] = ControllerButton(controller, ControlFunc.AUTOFOCUS)
 
-    controller.buttons[device.value("WHITE_BALANCE")] = ControllerButton(controller, ControlFunc.WHITE_BALANCE)
-    controller.buttons[device.value("PREV2PROG")] = ControllerButton(controller, ControlFunc.PREV2PROG)
+    t = device.type("WHITE_BALANCE")
+    if t == "button":
+        controller.buttons[device.value("WHITE_BALANCE")] = ControllerButton(controller,
+                                                                             ControlFunc.WHITE_BALANCE)
+    t = device.type("PREV2PROG")
+    if t == "button":
+        controller.buttons[device.value("PREV2PROG")] = ControllerButton(controller,
+                                                                         ControlFunc.PREV2PROG)
+
     v = device.value("PREV2PROG2")
     if v is not None:
         controller.buttons[v] = ControllerButton(controller, ControlFunc.PREV2PROG)
@@ -521,7 +569,7 @@ def handle_pygame_event(controller: Controller, ev: pygame.event.Event):
                 v = (1.0-dead_zone)/(v - dead_zone) * sign
                 ev.value = v
         except ZeroDivisionError:
-            ev .value = 0
+            ev.value = 0
 
         # flush the event queue to get rid of a flood of axis events
         # that slow things down

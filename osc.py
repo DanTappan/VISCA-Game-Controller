@@ -7,19 +7,22 @@ from typing import Optional
 import PySimpleGUI as Sg
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
+from win_print import win_print
+
 OSC_Port = 9999
 
 window : Optional[Sg.Window]  = None
 
 def camera_handler(_address, *args):
     """ Dispatcher handler for setcam command """
+    global window
 
     try:
         cam_num = int(args[0])
         window.write_event_value('OSC_SET_CAMERA', cam_num)
 
     except ValueError:
-        print(f"OSC Set Camera: bad arguments {args}")
+        win_print(f"OSC Set Camera: bad arguments {args}")
 
 def osc_task(t):
     """
@@ -33,6 +36,7 @@ class OSCTask:
         global window
 
         window = win
+
         self.dispatcher = Dispatcher()
         self.dispatcher.map("/setcam", camera_handler)
         self.server = BlockingOSCUDPServer(('',

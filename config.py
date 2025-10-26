@@ -7,7 +7,7 @@ import PySimpleGUI as Sg
 g_Debug = False
 
 g_Progname = "VISCA Game Controller"
-g_ProgVers = "1.0beta4"
+g_ProgVers = "1.0beta5"
 
 g_num_cams = 8
 cam_ips = ['127.0.0.1']*g_num_cams
@@ -28,8 +28,8 @@ g_swap_pan = False
 g_dead_zone = None
 
 # Bitfocus companion interface
-# the trigger commands are assumed to all be on one page (currently defaults to 99)
-g_companion_page = 99
+# the trigger commands are assumed to all be on one page
+g_companion_page = 0
 g_companion_host = "127.0.0.1"
 
 def configure():

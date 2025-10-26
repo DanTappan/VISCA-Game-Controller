@@ -1,5 +1,8 @@
 # Release Notes
 
+## Version 1.0beta5
+* Add support for simple 4 axis joystick
+* Try to fix concurrency issue
 ## Version 1.0beta4
 * bug fixes and exception handling
 * add VISCA Relay (UDP Port 10000) to support sending VISCA commands to current camera from Companion
