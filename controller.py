@@ -197,7 +197,7 @@ class JoystickControllerInput(BaseControllerInput):
         # Dead zone for filtering axis events
         # we need this because the Logitech joystick tends to move the twist (zoom) axis
         # when moving left or right
-        super().set("DEAD_ZONE", "number", 0.3)
+        super().set("DEAD_ZONE", "number", 0.5)
 
 class HomebrewControllerInput(BaseControllerInput):
     def __init__(self):

@@ -117,9 +117,12 @@ def connect_to_camera(cam_num) -> Camera:
     win = main_window
 
     if cam is not None:
-        cam.zoom(0)
-        cam.pantilt(0, 0)
-        cam.close_connection()
+        try:
+            cam.zoom(0)
+            cam.pantilt(0, 0)
+            cam.close_connection()
+        except ViscaException:
+            pass
         cam = None
 
     newcam = None
