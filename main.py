@@ -668,7 +668,7 @@ def main():
     win_print_init(window)
 
     # Start timer to poll power level
-    window.timer_start(frequency_ms=POWER_POLL_FREQUENCY, repeating=True, key='POWER_POLL')
+#    timer_id = window.timer_start(frequency_ms=POWER_POLL_FREQUENCY, repeating=True, key='POWER_POLL')
 
     main_window = window
 
@@ -691,6 +691,8 @@ def main():
             except Exception as exc:
                 win_print(exc)
 
+#    window.timer_stop(timer_id)
+
     pygame_task_end()
 
     if not window.is_closed():
@@ -703,7 +705,7 @@ def main():
 
     pygame.quit()
 
-
+    pass # spot for a breakpoint
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@
 # messages
 #
 from typing import Optional
+import threading
 import PySimpleGUI as Sg
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
@@ -32,6 +33,12 @@ def osc_task(t):
 
 
 class OSCTask:
+    def osc_task(self):
+        """
+        Thread to run
+        """
+        self.server.serve_forever()
+
     def __init__(self, win : Sg.Window):
         global window
 
@@ -42,7 +49,9 @@ class OSCTask:
         self.server = BlockingOSCUDPServer(('',
                                             OSC_Port),
                                            dispatcher=self.dispatcher)
-        self.thread = win.start_thread(lambda: osc_task(self))
+        self.thread = threading.Thread(target=self.osc_task)
+        self.thread.daemon = True
+        self.thread.start()
         pass
 
     def shutdown(self):

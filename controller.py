@@ -212,7 +212,7 @@ class HomebrewControllerInput(BaseControllerInput):
         super().set("PAN", "axis", 0)
         super().set("TILT", "axis", 1)
         super().set("ZOOM", "axis", 2)
-        super().set("INVERT_ZOOM", "number", 1)
+        super().set("INVERT_ZOOM", "number", -1)
 
         super().set("HELP", "string", help_text_homebrew)
         super().set("HELP_IMAGE", "file", '4axis.png')
