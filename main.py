@@ -32,6 +32,7 @@ if Windows and UsePsgTray:
 # from visca_over_ip.exceptions import ViscaException
 
 cam: Optional[Camera] = None
+current_cam = "Unknown"
 main_window:Optional[Sg.Window] = None
 config: Config = Config()
 bitfocus: Companion = Companion()
@@ -112,7 +113,7 @@ def handle_brightness(button: ControllerButton, up):
 
 def connect_to_camera(cam_num) -> Camera:
     """Connects to the camera specified by cam_index and returns it"""
-    global cam, main_window
+    global cam, current_cam, main_window
 
     win = main_window
 
@@ -120,9 +121,13 @@ def connect_to_camera(cam_num) -> Camera:
         try:
             cam.zoom(0)
             cam.pantilt(0, 0)
-            cam.close_connection()
         except ViscaException:
+            # Probably indicates an issue with the VISCA connection
+            win_print(f'Camera {current_cam} reset pan/tilt/zoom failed')
             pass
+
+        cam.close_connection()
+
         cam = None
 
     newcam = None
@@ -147,6 +152,7 @@ def connect_to_camera(cam_num) -> Camera:
         visca_relay.ptz_set(ptz=cam_ip, ptz_port=cam_port)
 
     win_print(f'Camera {cam_name}')
+    current_cam = cam_name
 
     if UsePsgTray:
         tray = win.metadata
@@ -460,7 +466,7 @@ def handle_pygame_event(ev:pygame.event.Event):
     if ev.type == pygame.JOYDEVICEADDED or ev.type == pygame.JOYDEVICEREMOVED:
         joystick = controller.get_pygame_joystick()
         if joystick is not None:
-            win_print(f'Controller: {joystick.get_name()}')
+            win_print(f'{joystick.get_name()}')
             print_power_level(joystick, True, True)
         else:
             win_print("No controller")
