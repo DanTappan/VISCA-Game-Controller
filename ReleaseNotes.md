@@ -1,5 +1,11 @@
 # Release Notes
 
+## Version 1.0beta6
+* add support for multiple simultaneous controllers
+* add support for user defined controllers (defined by JSON files)
+* add support for a T-bar fader control
+* bug fixes
+  
 ## Version 1.0beta5
 * Add support for simple 4 axis joystick
 * Try to fix concurrency issue
