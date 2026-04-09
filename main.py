@@ -1,11 +1,13 @@
 
+# TODO: re-enable typing inspection and figure out how to get rid of all the "X|None" complaints
+
 import platform
 import threading
 from typing import Optional
 from enum import IntEnum
 
 from visca_exceptions import ViscaException
-from file_paths import controller_icon
+from file_paths import controller_icon, search_path
 import PySimpleGUI as Sg
 from camera import Camera
 from osc import OSCTask
@@ -16,13 +18,11 @@ import pygame
 from numpy import interp
 from config import Config
 from companion import Companion
-from controller import Controller, ControllerAxis, ControllerButton
+from controller import ControllerList,  ControllerAxis, ControllerButton
 from viscarelay import ViscaRelay
 from win_print import win_print, win_print_init
 
 Windows = platform.system() == 'Windows'
-
-POWER_POLL_FREQUENCY = 300000   # 5 minutes in ms
 
 UsePsgTray = True
 if Windows and UsePsgTray:
@@ -37,13 +37,7 @@ main_window:Optional[Sg.Window] = None
 config: Config = Config()
 bitfocus: Companion = Companion()
 visca_relay: ViscaRelay = ViscaRelay(rcv_port=config.visca_relay_port)
-
-
-#
-# For now assume only a single controller, though the module can handle
-# multiple
-controller: Controller = Controller(long_press_limit=config.long_press_time,
-                                    dead_zone=config.dead_zone)
+controller_list: Optional[ControllerList]  = None
 
 pygame_thread_lock: threading.Lock = threading.Lock()
 
@@ -53,26 +47,6 @@ def pygame_lock(f):
         data structures """
     with pygame_thread_lock:
         f()
-
-def joystick_init():
-    """Initializes pygame and the joystick.
-    """
-    global controller
-
-    joystick = controller.get_pygame_joystick()
-
-    if joystick is not None:
-        del joystick
-
-    try:
-        joystick = pygame.joystick.Joystick(0)
-
-    except pygame.error:
-        joystick = None
-
-    controller.set_pygame_joystick(joystick)
-
-    return joystick
 
 def handle_brightness_up(button: ControllerButton):
     handle_brightness(button, True)
@@ -86,10 +60,7 @@ def handle_brightness(button: ControllerButton, up):
     """
     global cam
 
-    if button is None:
-        return
-
-    if cam is None:
+    if cam is None or button is None:
         return
 
     if not button.is_down:
@@ -111,7 +82,7 @@ def handle_brightness(button: ControllerButton, up):
     except ViscaException:
         win_print("brightness change failed")
 
-def connect_to_camera(cam_num) -> Camera:
+def connect_to_camera(cam_num) -> Optional[Camera]:
     """Connects to the camera specified by cam_index and returns it"""
     global cam, current_cam, main_window
 
@@ -149,6 +120,7 @@ def connect_to_camera(cam_num) -> Camera:
         bitfocus.pushbutton(* config.companion(0, cam_num))
 
         # Switch the VISCA relay to the new camera
+        # noinspection PyTypeChecker
         visca_relay.ptz_set(ptz=cam_ip, ptz_port=cam_port)
 
     win_print(f'Camera {cam_name}')
@@ -166,14 +138,14 @@ def handle_select_cam(button: ControllerButton = None):
     Handle a button push to select a camera
     activates on button uup. Long press selects 2nd bank of cameras
     """
-    global cam, main_window
+    global cam
 
     if button is None or button.is_down:
         return
 
     cam_num = button.value
     if button.long_press:
-        cam_num = cam_num + 4
+        cam_num += 4
     if cam_num < 1 or cam_num > config.num_cams:
         win_print(f"Bad camera number {cam_num}")
     else:
@@ -189,6 +161,27 @@ def osc_select_cam(cam_num):
         win_print(f"OSC set camera: bad camera number {cam_num}")
     else:
         cam = connect_to_camera(cam_num)
+
+def handle_tbar(axis: ControllerAxis):
+    """ Handle a change to a t-bar axis.
+        a T-BAR is a special sort of axis in that the range is 0 - 100 and reaching the extreme causes
+        the preview to finish transition to program and inverts the sense of
+        the axis
+        Relay the change to a custom variable
+        """
+    if axis is None:
+        return
+
+    pos = axis.get_position()
+    # convert -1 to 1 to 0 - 1 and reduce precision to 2 decimal places
+    pos = int(round((pos + 1) / 2, 2) * 100)
+
+    if pos == 100:
+        # prev2prog
+        bitfocus.pushbutton(*config.companion(1, 1))
+        axis.invert *= -1  # flip axis
+    else:
+        bitfocus.t_bar(pos, config.companion_host())
 
 def handle_prev2prog(button: ControllerButton=None):
     """"
@@ -209,7 +202,7 @@ def handle_preset(button: ControllerButton):
     and long press (save preset)
     """
     global cam
-    if cam is None:
+    if cam is None or button is None:
         return
     #
     # Activate on button up
@@ -246,6 +239,7 @@ def joy_pos_to_cam_speed(axis_position: float, table_name: str, invert=True) -> 
 
     table = config.sensitivity(table_name)
 
+    # noinspection PyTypeChecker
     val =sign * round(
         interp(abs(axis_position), table['joy'], table['cam'])
     )
@@ -265,11 +259,9 @@ def handle_focus(axis: ControllerAxis, far):
     """
     global cam
 
-    if axis is None:
+    if cam is None or axis is None:
         return
 
-    if cam is None:
-        return
     #
     # select manual focus and start camera movement
     cam.set_focus_mode('manual')
@@ -300,7 +292,7 @@ def handle_autofocus(button: ControllerButton):
     """
     global cam
 
-    if button is None or cam is None:
+    if cam is None or button is None:
         return
 
     if not button.is_down:
@@ -331,6 +323,9 @@ def handle_focus_hat(button: ControllerButton):
     downward (4, 5, 6) to"focus near", side to side (3, 7) to autofocus
     """
     global cam
+
+    if cam is None or button is None:
+        return
 
     focus_command, focus_pos = focus_map[button.value]
     if not button.is_down:
@@ -365,7 +360,7 @@ def handle_focus_hat(button: ControllerButton):
 def handle_white_balance(button:ControllerButton):
     global cam
 
-    if not cam:
+    if cam is None or button is None:
         return
 
     if button.is_down:
@@ -390,7 +385,7 @@ def handle_pantilt(axis: ControllerAxis=None):
     """
     global cam
 
-    if cam is None:
+    if cam is None or axis is None:
         return
 
     pan_axis = axis.controller.pan_axis
@@ -415,7 +410,7 @@ def handle_zoom(axis:ControllerAxis):
     """
     global cam
 
-    if axis is None or cam is None:
+    if cam is None or axis is None:
         return
 
     zoom = joy_pos_to_cam_speed(axis.get_position(), 'zoom')
@@ -423,63 +418,67 @@ def handle_zoom(axis:ControllerAxis):
             cam.zoom(zoom)
     axis.set_moving(zoom != 0)
 
-last_power_level = 'unknown'
-#
-# Set the background color of the text window based on the current controller power level
-power_to_background = {
-    "unknown" : 'white',
-    "wired" : 'white',
-    "max" : 'white',
-    "full" : 'white',
-    "medium" : 'yellow',
-    "low" : 'orange',
-    "empty" : 'red'
-}
-def print_power_level(joystick: pygame.joystick.JoystickType, force=False, reset=False):
-    global last_power_level, main_window
-
-    if reset:
-        last_power_level = 'unknown'
-
-    if joystick is None:
-        return
-
-    power = joystick.get_power_level()
-
-    if power != 'unknown' and power != 'wired':
-        if force or power != last_power_level:
-            win_print(f'Joystick battery {power}')
-            last_power_level = power
-    try:
-        background = power_to_background[power]
-        main_window['OUTPUT'](background_color=background)
-    except IndexError:
-        pass
-
 def handle_pygame_event(ev:pygame.event.Event):
     """
     Handle a single pygame event. This is called as a closure via pygame_lock(), to make
     sure that the serialization lock is properly released
     """
-    global controller
-
-    if ev.type == pygame.JOYDEVICEADDED or ev.type == pygame.JOYDEVICEREMOVED:
-        joystick = controller.get_pygame_joystick()
-        if joystick is not None:
-            win_print(f'{joystick.get_name()}')
-            print_power_level(joystick, True, True)
-        else:
-            win_print("No controller")
+    if ev.type == pygame.JOYDEVICEADDED:
+        controller_list.add(ev.device_index)
+    elif ev.type == pygame.JOYDEVICEREMOVED:
+        controller = controller_list.lookup(ev.instance_id)
+        if controller is not None:
+            joystick = controller.get_pygame_joystick()
+            if joystick is not None:
+                win_print(f'{joystick.get_name()} removed')
+            controller_list.remove(ev.instance_id)
     else:
-        controller.pygame_event(ev)
+        try:
+            controller = controller_list.lookup(ev.instance_id)
+        except AttributeError:
+            controller = None
+        if controller is not None:
+            controller.pygame_event(ev)
 
+# Excessive unnecessary consecutive AXIS events, while the joystick is still moving,
+# slow things down.
+# Set this to True to cause a flush of pending AXIS events.
+pygame_flush_axis = False
+def flush_axis_events():
+    """ Callback function to trigger axis event flush"""
+    global pygame_flush_axis
+    pygame_flush_axis = True
+
+#
+# Mapping of controller functions to program functions
+#
+controller_callbacks = {
+    "select_cam" : handle_select_cam,
+    "focus" : handle_focus_hat,
+    "focus_far":handle_focus_far,
+    "focus_near":handle_focus_near,
+    "brightness_up":handle_brightness_up,
+    "brightness_down":handle_brightness_down,
+    "white_balance":handle_white_balance,
+    "pantilt":handle_pantilt,
+    "zoom":handle_zoom,
+    "autofocus":handle_autofocus,
+    "prev2prog":handle_prev2prog,
+    "preset":handle_preset,
+    "tbar":handle_tbar,
+    "flushaxis":flush_axis_events
+}
 
 def main_loop():
     """
     Main program loop
     return to exit program
     """
-    global main_window
+    global main_window, controller_list
+
+    controller_list = ControllerList(callbacks=controller_callbacks,
+                                     long_press=config.long_press_time,
+                                     dead_zone=config.dead_zone)
 
     win = main_window
     tray = win.metadata
@@ -495,6 +494,7 @@ def main_loop():
                 event = values[0]
 
         if event == '-PRINT-':
+            # noinspection PyTypeChecker
             Sg.cprint(values[event], window=win, key="OUTPUT", c=('black', 'white'))
 
         elif event in ('Show Window', 'Center Window', Sg.EVENT_SYSTEM_TRAY_ICON_ACTIVATED,
@@ -517,8 +517,17 @@ def main_loop():
                 return False
 
         elif event == 'Help':
-            Sg.popup(f"{config.progname}({config.progvers}){controller.help_text}", title="Help", keep_on_top=True, line_width=70,
-                     image=controller.help_image)
+            # Display help for each controller
+            # noinspection PyTypeChecker
+            for instance_id in controller_list:
+                controller = controller_list.lookup(instance_id)
+                if controller is not None:
+                    joystick = controller.get_pygame_joystick()
+                    if joystick is not None:
+                        joystick_name = joystick.get_name()
+                        Sg.popup(f"{config.progname}({config.progvers})\n{joystick_name}{controller.help_text}",
+                             title="Help", keep_on_top=True, line_width=70,
+                             image=search_path(controller.help_image))
 
         elif event == 'Credits':
             Sg.popup(config.credits_text, title="Credits", keep_on_top=True, line_width=80)
@@ -542,8 +551,6 @@ def main_loop():
 
             pygame_lock(lambda: handle_pygame_event(ev))
 
-        elif event == 'POWER_POLL':
-            print_power_level(controller.get_pygame_joystick())
         elif event == "OSC_SET_CAMERA":
             pygame_lock(lambda: osc_select_cam(values['OSC_SET_CAMERA']))
 
@@ -554,8 +561,11 @@ pygame_thread: Optional[threading.Thread] = None
 def pygame_task(win):
     """
     Retrieve and pass on pygame events
+    NOTE: it is VERY important to only call into the pygame module from
+    this task. Doing otherwise can cause PIL crashes and other unexpected
+    behavior
     """
-    global controller
+    global pygame_flush_axis, pygame_task_exit
 
 #   pygame.init()
 # To reduce startup time: call only the init() functions that we need
@@ -565,33 +575,30 @@ def pygame_task(win):
         win_print("No Joystick")
 
     while not pygame_task_exit:
-        # noinspection PyBroadException
+        if pygame_flush_axis:
+            pygame.event.clear(pygame.JOYAXISMOTION)
+            pygame_flush_axis = False
+
         try:
             ev = pygame.event.wait(100)
 
-        except:
+        except Exception as e:
             # sometime the wait() call "returns a result with exception set"
             # this seems to be a transient error, maybe related to initialization?
-            # I haven't been able to figure out the exception type this returns
+            win_print(f'unexpected exception {e}')
             continue
 
         pass_event = False
         if ev.type == pygame.NOEVENT:
             pass
-        elif ev.type == pygame.JOYDEVICEREMOVED:
-            pygame_lock(lambda: joystick_init())
-            pass_event = True
-        elif ev.type == pygame.JOYDEVICEADDED:
-            joystick = controller.get_pygame_joystick()
-            if joystick is None:
-                pygame_lock(lambda: joystick_init())
-                pass_event = True
         else:
             pass_event = True
 
         if pass_event:
             win.write_event_value('PYGAME_EVENT', ev)
 
+    # exited loop, return to terminate task
+    pygame.quit()
 
 def pygame_task_start(win: Sg.Window):
     """
@@ -600,7 +607,9 @@ def pygame_task_start(win: Sg.Window):
     """
     global pygame_thread
 
-    pygame_thread = win.start_thread(lambda: pygame_task(win), None)
+    pygame_thread = threading.Thread(target=lambda: pygame_task(win))
+    pygame_thread.daemon = True
+    pygame_thread.start()
 
 def pygame_task_end():
     """
@@ -610,30 +619,14 @@ def pygame_task_end():
     global pygame_thread, pygame_task_exit
 
     pygame_task_exit = True
-    pygame.event.post(pygame.event.Event(pygame.NOEVENT)) # wake thread
-    if pygame_thread is not None:
-        pygame_thread.join()
-    pygame_thread = None
 
 def main():
     """
     Main program
     :return: None
     """
-    global cam, controller, main_window
+    global cam, main_window
 
-    controller.set_callbacks(select_cam=handle_select_cam,
-                             focus=handle_focus_hat,
-                             focus_far=handle_focus_far,
-                             focus_near=handle_focus_near,
-                             brightness_up=handle_brightness_up,
-                             brightness_down=handle_brightness_down,
-                             white_balance=handle_white_balance,
-                             pantilt=handle_pantilt,
-                             zoom=handle_zoom,
-                             autofocus=handle_autofocus,
-                             prev2prog=handle_prev2prog,
-                             preset=handle_preset)
     settings = Sg.UserSettings()
     window_location = settings.get('-location-')
     window_hidden = settings.get('-hidden-')
@@ -676,9 +669,6 @@ def main():
         window.hide()
     win_print_init(window)
 
-    # Start timer to poll power level
-#    timer_id = window.timer_start(frequency_ms=POWER_POLL_FREQUENCY, repeating=True, key='POWER_POLL')
-
     main_window = window
 
     win_print(f'{config.progname}({config.progvers})')
@@ -702,6 +692,8 @@ def main():
 
 #    window.timer_stop(timer_id)
 
+    osc_task.shutdown()
+
     pygame_task_end()
 
     if not window.is_closed():
@@ -710,11 +702,8 @@ def main():
     if tray:
         tray.close()
 
-    osc_task.shutdown()
-
-    pygame.quit()
-
     pass # spot for a breakpoint
 
 if __name__ == "__main__":
     main()
+    pass

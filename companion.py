@@ -22,5 +22,14 @@ class Companion:
         except OSError:
             print("companion send failed")
 
+    def t_bar(self, value, host='127.0.0.1'):
+        """ Set a value for a t-bar custom variable """
+        buffer = f'CUSTOM-VARIABLE tbar_value SET-VALUE {value}'
+        address = (host, self.port)
+        try:
+            self.socket.sendto(buffer.encode('utf-8'), address)
+        except OSError:
+            print("companion send failed")
+
 
 

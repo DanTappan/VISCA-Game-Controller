@@ -9,6 +9,7 @@ import PySimpleGUI as Sg
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 from win_print import win_print
+#from time import sleep
 
 OSC_Port = 9999
 
@@ -37,6 +38,7 @@ class OSCTask:
         """
         Thread to run
         """
+        self.server.timeout = .5
         self.server.serve_forever()
 
     def __init__(self, win : Sg.Window):
@@ -52,8 +54,7 @@ class OSCTask:
         self.thread = threading.Thread(target=self.osc_task)
         self.thread.daemon = True
         self.thread.start()
-        pass
 
     def shutdown(self):
         self.server.shutdown()
-        pass
+        self.thread.join()

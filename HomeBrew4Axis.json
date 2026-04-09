@@ -1,0 +1,34 @@
+{
+  "PREV2PROG": [
+    "button",
+    0
+  ],
+  "PAN": [
+    "axis",
+    0
+  ],
+  "TILT": [
+    "axis",
+    1
+  ],
+  "ZOOM": [
+    "axis",
+    2
+  ],
+  "INVERT_ZOOM": [
+    "number",
+    -1
+  ],
+  "HELP": [
+    "string",
+    "\n\nPan & Tilt     \n                Joystick L/R/U/D\nZoom\n                Twist joystick\nFade Preview to Program \n                Top button\n"
+  ],
+  "HELP_IMAGE": [
+    "file",
+    "4axis.png"
+  ],
+  "DEAD_ZONE": [
+    "number",
+    0.1
+  ]
+}

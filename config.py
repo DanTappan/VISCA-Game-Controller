@@ -7,7 +7,7 @@ import PySimpleGUI as Sg
 g_Debug = False
 
 g_Progname = "VISCA Game Controller"
-g_ProgVers = "1.0beta5"
+g_ProgVers = "1.0beta6"
 
 g_num_cams = 8
 cam_ips = ['127.0.0.1']*g_num_cams
@@ -178,6 +178,10 @@ class Config:
     @staticmethod
     def companion(row:int, column:int):
         return [g_companion_page, row, column, g_companion_host]
+
+    @staticmethod
+    def companion_host():
+        return g_companion_host
 
     @staticmethod
     def sensitivity(table: str):

@@ -3,20 +3,53 @@
 #
 from enum import IntEnum
 import time
-from typing import Union
+from typing import Union, Dict
 
 import pygame
 import pygame.event
 import platform
 from file_paths import file_path
 from win_print import win_print
+from controller_map import controller_map
 
 Windows = platform.system() == 'Windows'
 Linux = platform.system() == 'Linux'
 
+class ControllerList:
+    def __init__(self, callbacks, long_press, dead_zone):
+        self.dict: Dict[int, Controller] = {}
+        self.callbacks = callbacks
+        self.long_press = long_press
+        self.dead_zone = dead_zone
+
+    def __iter__(self):
+        return iter(self.dict)
+
+    def add(self, index):
+        joy = pygame.joystick.Joystick(index)
+        instance_id = joy.get_instance_id()
+        self.remove(instance_id)
+        controller = Controller(self.callbacks,
+                                long_press_limit=self.long_press,
+                                dead_zone=self.dead_zone)
+        controller.set_callbacks(self.callbacks)
+        controller.set_pygame_joystick(joy)
+        self.dict[instance_id] = controller
+        return controller
+
+    def remove(self, instance_id):
+        try:
+            controller = self.dict.pop(instance_id)
+        except KeyError:
+            controller = None
+        if controller is not None:
+            flush_controller(controller)
+            del controller
+
+    def lookup(self, instance_id):
+        return self.dict.get(instance_id)
 
 help_text_controller = """
-Control PTZ cameras using a Game Controller
 
 Pan & Tilt    
                 Left stick
@@ -47,7 +80,6 @@ Presets 1-8
 """
 
 help_text_joystick = """
-Control PTZ cameras using a Flight Simulator Joystick
 
 Pan & Tilt     
                 Joystick L/R/U/D
@@ -75,7 +107,6 @@ Presets 1-6
 """
 
 help_text_homebrew = """
-Control PTZ cameras using 3 axis joystick
 
 Pan & Tilt     
                 Joystick L/R/U/D
@@ -109,10 +140,14 @@ class ControlFunc(IntEnum):
     FOCUS_NEAR=12
     FOCUS_FAR=13
     FOCUS=14
+    TBAR=15
 
-class BaseControllerInput:
-    def __init__(self):
-        self.dict = {}
+class BaseControllerDef:
+    def __init__(self, init_dict=None):
+        if init_dict is None:
+            self.dict = {}
+        else:
+            self.dict = init_dict
 
     def set(self, key, t, v):
         self.dict[key] = (t, v)
@@ -129,97 +164,27 @@ class BaseControllerInput:
         except KeyError:
             return None
 
-class GameControllerInput(BaseControllerInput):
-    def __init__(self):
-        super().__init__()
-        super().set("CAMERA_SELECT_1", "button", 0)
-        super().set("CAMERA_SELECT_2", "button", 1)
-        super().set("CAMERA_SELECT_3", "button", 2)
-        super().set("CAMERA_SELECT_4", "button", 3)
+    def get_dict(self):
+        return self.dict
 
-        super().set("BRIGHTNESS_UP", "button", 4)
-        super().set("BRIGHTNESS_DOWN", "button", 5)
+def controller_type(joystick) -> BaseControllerDef | None:
+    """ Find the controller definition for a given joystick type.
+        This tries to load a configuration JSON file based on the joystick name
+        """
+    controller_dict = controller_map(joystick.get_name())
+    if controller_dict is not None:
+        controller_def = BaseControllerDef(controller_dict)
+        return controller_def
+    else:
+        win_print(f'ERROR: controller config not found')
+        return None
 
-        super().set("AUTO_FOCUS", "button", 6)
-        super().set("WHITE_BALANCE", "button", 7)
-
-        super().set("PREV2PROG", "button", 8) # left stick
-        super().set("PREV2PROG2", "button", 9) # right stick
-
-        # Axes
-        if Windows:
-            super().set("PAN", "axis", 0)
-            super().set("TILT", "axis", 1)
-            super().set("ZOOM", "axis", 3)
-            super().set("FOCUS_NEAR", "axis", 4)
-            super().set("FOCUS_FAR", "axis", 5)
-        elif Linux:
-            super().set("PAN", "axis", 0)
-            super().set("TILT", "axis", 1)
-            super().set("ZOOM", "axis", 4)
-            super().set("FOCUS_NEAR", "axis", 2)
-            super().set("FOCUS_FAR", "axis", 5)
-        super().set("INVERT_ZOOM",  "number",1)
-        # Hats
-        super().set("PRESETS", "hat", 0)
-        super().set("HELP", "string", help_text_controller)
-        super().set("HELP_IMAGE", "file", 'GameController.png')
-        super().set("DEAD_ZONE", "number", 0)
-
-
-class JoystickControllerInput(BaseControllerInput):
-    def __init__(self):
-        super().__init__()
-        super().set("CAMERA_SELECT_1", "button", 4)
-        super().set("CAMERA_SELECT_2", "button", 2)
-        super().set("CAMERA_SELECT_3", "button", 3)
-        super().set("CAMERA_SELECT_4", "button", 5)
-
-     #   No buttons for Brightness
-
-        super().set("WHITE_BALANCE", "button", 1)# side
-        super().set("PREV2PROG", "button", 0)  # trigger
-
-        # Axes
-        super().set("PAN", "axis", 0)
-        super().set("TILT", "axis", 1)
-        super().set("ZOOM", "axis", 2)
-        super().set("INVERT_ZOOM", "number", -1)
-
-        super().set("FOCUS", "hat", 0)
-
-        super().set("PRESETS", "button", 6) # start at button 6
-        super().set("NUM_PRESETS", "number", 6) #  number of preset buttons
-        super().set("FOCUS", "hat", 0)
-
-        super().set("HELP", "string", help_text_joystick)
-        super().set("HELP_IMAGE", "file", 'LogitechJoystick.png')
-        # Dead zone for filtering axis events
-        # we need this because the Logitech joystick tends to move the twist (zoom) axis
-        # when moving left or right
-        super().set("DEAD_ZONE", "number", 0.5)
-
-class HomebrewControllerInput(BaseControllerInput):
-    def __init__(self):
-        super().__init__()
-    # only the one button for now
-
-     #   No buttons for Brightness
-
-        super().set("PREV2PROG", "button", 0)  # top button
-
-        # Axes
-        super().set("PAN", "axis", 0)
-        super().set("TILT", "axis", 1)
-        super().set("ZOOM", "axis", 2)
-        super().set("INVERT_ZOOM", "number", -1)
-
-        super().set("HELP", "string", help_text_homebrew)
-        super().set("HELP_IMAGE", "file", '4axis.png')
-        super().set("DEAD_ZONE", "number", .1)
+def null_function():
+    return None
 
 class Controller:
-    def __init__(self, doubleclick_limit=0, long_press_limit=2, dead_zone=None):
+    def __init__(self, joy:pygame.joystick.JoystickType,
+                 doubleclick_limit=0, long_press_limit=2, dead_zone=None):
         self.doubleclick_limit = doubleclick_limit
         self.long_press_limit = long_press_limit
         self.help_text = ""
@@ -227,7 +192,7 @@ class Controller:
         #
         # per-controller variables
         #
-        self.joystick = None
+        self.joystick = joy
         self.pan_axis = None
         self.tilt_axis = None
         self.dead_zone = dead_zone # override device default
@@ -247,44 +212,28 @@ class Controller:
         self.axis_funcs = {}
 
         # Hat functions act as buttons, so no map required
+        self.flush_axis_events = null_function
 
-    def set_callbacks(self, select_cam=None,  focus = None, focus_near=None, focus_far=None,
-                    brightness_up=None, brightness_down=None,
-                      pantilt=None, zoom=None, white_balance=None, autofocus=None,
-                      prev2prog=None, preset=None
-                      ):
-        if select_cam is not None:
-            self.button_funcs[ControlFunc.CAMERA_SELECT] = select_cam
-        if focus is not None:
-                self.button_funcs[ControlFunc.FOCUS] = focus
-        if focus_near is not None:
-            self.axis_funcs[ControlFunc.FOCUS_NEAR] = focus_near
-        if focus_far is not None:
-            self.axis_funcs[ControlFunc.FOCUS_FAR] = focus_far
-        if brightness_up is not None:
-            self.button_funcs[ControlFunc.BRIGHTNESS_UP] = brightness_up
-        if brightness_down is not None:
-            self.button_funcs[ControlFunc.BRIGHTNESS_DOWN] = brightness_down
-        if pantilt is not None:
-            self.axis_funcs[ControlFunc.PANTILT] = pantilt
-        if zoom is not None:
-            self.axis_funcs[ControlFunc.ZOOM] = zoom
-        if prev2prog is not None:
-            self.button_funcs[ControlFunc.PREV2PROG] = prev2prog
-        if autofocus is not None:
-            self.button_funcs[ControlFunc.AUTOFOCUS] = autofocus
-        if white_balance is not None:
-            self.button_funcs[ControlFunc.WHITE_BALANCE] = white_balance
-        if preset is not None:
-            self.button_funcs[ControlFunc.PRESET] = preset
+    def set_callbacks(self, callbacks):
+        self.button_funcs[ControlFunc.CAMERA_SELECT] = callbacks.get("select_cam", null_function)
+        self.button_funcs[ControlFunc.FOCUS] = callbacks.get("focus", null_function)
+        self.axis_funcs[ControlFunc.FOCUS_NEAR] = callbacks.get("focus_near", null_function)
+        self.axis_funcs[ControlFunc.FOCUS_FAR] = callbacks.get("focus_far", null_function)
+        self.button_funcs[ControlFunc.BRIGHTNESS_UP] = callbacks.get("brightness_up", null_function)
+        self.button_funcs[ControlFunc.BRIGHTNESS_DOWN] = callbacks.get("brightness_down", null_function)
+        self.axis_funcs[ControlFunc.PANTILT] = callbacks.get("pantilt", null_function)
+        self.axis_funcs[ControlFunc.ZOOM] = callbacks.get("zoom", null_function)
+        self.axis_funcs[ControlFunc.TBAR] = callbacks.get("tbar", null_function)
+        self.button_funcs[ControlFunc.PREV2PROG] = callbacks.get("prev2prog", null_function)
+        self.button_funcs[ControlFunc.AUTOFOCUS] = callbacks.get("autofocus", null_function)
+        self.button_funcs[ControlFunc.WHITE_BALANCE] = callbacks.get("white_balance", null_function)
+        self.button_funcs[ControlFunc.PRESET] = callbacks.get("preset", null_function)
+        self.flush_axis_events = callbacks.get("flushaxis", null_function)
 
+    def flush_axis_events(self):
+        self.flush_axis_events()
 
     def set_pygame_joystick(self, joystick:pygame.joystick.JoystickType):
-        #
-        # handle a controller add/remove event
-        if self.joystick is not None or joystick is None:
-            flush_controller(self)
-
         self.joystick = joystick
         if joystick is not None:
             setup_controller(self)
@@ -306,24 +255,6 @@ class Controller:
 
     def set_help_image(self, f):
         self.help_image = f
-
-# Algorithm for deciding what type of controller we have. Currently, this is  a heuristic
-# based on the number of axis and buttons
-def controller_type(controller: Controller):
-    joystick = controller.get_pygame_joystick()
-
-    num_axes = joystick.get_numaxes()
-    if num_axes == 6:
-        # win_print("Game Controller")
-        return GameControllerInput()
-    elif num_axes == 4:
-        # win_print("Flight Controller Joystick")
-        return JoystickControllerInput()
-    elif num_axes == 3:
-        # win_print("3 axis joystick")
-        return HomebrewControllerInput()
-    else:
-        return None
 
 #
 # Handle a controller button push or release
@@ -453,7 +384,7 @@ def flush_controller(controller:Controller):
 def setup_controller(controller: Controller):
 
     joystick = controller.get_pygame_joystick()
-    device = controller_type(controller)
+    device = controller_type(joystick)
     if device is None:
         return
 
@@ -511,17 +442,27 @@ def setup_controller(controller: Controller):
         controller.buttons[v] = ControllerButton(controller, ControlFunc.PREV2PROG)
 
     v = device.value("PAN")
-    axis = ControllerAxis(controller, ControlFunc.PANTILT, v, dead_zone=dead_zone)
-    controller.axes[v] = axis
-    controller.pan_axis = axis
+    if v is not None:
+        axis = ControllerAxis(controller, ControlFunc.PANTILT, v, dead_zone=dead_zone)
+        controller.axes[v] = axis
+        controller.pan_axis = axis
+
     v = device.value("TILT")
-    axis = ControllerAxis(controller, ControlFunc.PANTILT, v, dead_zone=dead_zone)
-    controller.axes[v] = axis
-    controller.tilt_axis = axis
+    if v is not None:
+        axis = ControllerAxis(controller, ControlFunc.PANTILT, v, dead_zone=dead_zone)
+        controller.axes[v] = axis
+        controller.tilt_axis = axis
 
     v = device.value("ZOOM")
-    axis = ControllerAxis(controller, ControlFunc.ZOOM, v, invert=device.value("INVERT_ZOOM"), dead_zone=dead_zone)
-    controller.axes[v] = axis
+    if v is not None:
+        axis = ControllerAxis(controller, ControlFunc.ZOOM, v,
+                              invert=device.value("INVERT_ZOOM"), dead_zone=dead_zone)
+        controller.axes[v] = axis
+
+    v = device.value("TBAR")
+    if v is not None:
+        axis = ControllerAxis(controller, ControlFunc.TBAR, v, dead_zone=0)
+        controller.axes[v] = axis
 
     t = device.type("FOCUS_NEAR")
     if t == "axis":
@@ -564,6 +505,8 @@ def handle_pygame_event(controller: Controller, ev: pygame.event.Event):
                 sign = 1
             v = abs(ev.value)
             if not axis.moving and v <= dead_zone:
+                # Flush excess axis events that slow things down
+                controller.flush_axis_events()
                 return
             else:
                 v = (1.0-dead_zone)/(v - dead_zone) * sign
@@ -571,10 +514,8 @@ def handle_pygame_event(controller: Controller, ev: pygame.event.Event):
         except ZeroDivisionError:
             ev.value = 0
 
-        # flush the event queue to get rid of a flood of axis events
-        # that slow things down
-        pygame.event.clear(pygame.JOYAXISMOTION)
-
+        # Flush excess axis events that slow things down
+        controller.flush_axis_events()
         axis.event()
 
     elif ev.type == pygame.JOYBUTTONDOWN or ev.type == pygame.JOYBUTTONUP:
@@ -586,7 +527,7 @@ def handle_pygame_event(controller: Controller, ev: pygame.event.Event):
     elif ev.type == pygame.JOYHATMOTION:
         hat = controller.hats[ev.hat]
         # flush excess events
-        pygame.event.clear(pygame.JOYAXISMOTION)
+        controller.flush_axis_events()
         hat.event()
 
 

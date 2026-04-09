@@ -1,0 +1,82 @@
+{
+  "CAMERA_SELECT_1": [
+    "button",
+    0
+  ],
+  "CAMERA_SELECT_2": [
+    "button",
+    1
+  ],
+  "CAMERA_SELECT_3": [
+    "button",
+    2
+  ],
+  "CAMERA_SELECT_4": [
+    "button",
+    3
+  ],
+  "BRIGHTNESS_UP": [
+    "button",
+    4
+  ],
+  "BRIGHTNESS_DOWN": [
+    "button",
+    5
+  ],
+  "AUTO_FOCUS": [
+    "button",
+    6
+  ],
+  "WHITE_BALANCE": [
+    "button",
+    7
+  ],
+  "PREV2PROG": [
+    "button",
+    8
+  ],
+  "PREV2PROG2": [
+    "button",
+    9
+  ],
+  "PAN": [
+    "axis",
+    0
+  ],
+  "TILT": [
+    "axis",
+    1
+  ],
+  "ZOOM": [
+    "axis",
+    4
+  ],
+  "FOCUS_NEAR": [
+    "axis",
+    2
+  ],
+  "FOCUS_FAR": [
+    "axis",
+    5
+  ],
+  "INVERT_ZOOM": [
+    "number",
+    1
+  ],
+  "PRESETS": [
+    "hat",
+    0
+  ],
+  "HELP": [
+    "string",
+    "\n\nPan & Tilt    \n                Left stick\nZoom\n                Right stick\nBrightness    \n                Left bumper : Decrease, \n                Right: Increase\nManual Focus\n                Left trigger: Near, \n                Right: Far\nSelect Camera \n                A, B, X, Y: 1-4; \n                Long press: 5-8 \n                Puts selected camera in Preview\nFade Preview to Program \n                Push left or right stick\nAutoFocus mode\n                \"Next\" button\nWhite Balance  \n                Back button\n                short press: one push white balance\n                long press: auto white balance\nPresets 1-8   \n                Hat, direction selects preset number \n                Short press: recall\n                long press: set\n"
+  ],
+  "HELP_IMAGE": [
+    "file",
+    "GameController.png"
+  ],
+  "DEAD_ZONE": [
+    "number",
+    0
+  ]
+}
