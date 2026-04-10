@@ -85,6 +85,7 @@ See section [Bitfocus Companion Integrations](#bitfocus-companion-integrations).
 
 ## Controller Functions
 
+### Game Controller
 The program supports the following functions using a game controller
 
 ![Game Controller](GameController.png)
@@ -166,6 +167,7 @@ Preset. The 8 possible directions on the D-pad/"Hat" each select one of presets 
 </tr>
 </table>
 
+### Logitech Joystick
 The Program supports the following functions using a Flight Simulator Joystick, such as the [Logitech Extreme 3D Pro](https://www.logitechg.com/en-us/products/space/extreme-3d-pro-joystick.963290-0403.html)
 
 ![Logitech Joystick](LogitechJoystick.png)
@@ -237,8 +239,13 @@ Presets 1-6
 </td>
 <td>Base buttons. A long push sets the preset, a short push recalls</td>
 </tr>
+  <tr>
+  <td>Video Fade. If Bitfocus Companion is running (and properly configured) acts as a transition bar to fade the Preview window to the Program Window</td>
+  <td>Transition Bar</td>
+</tr>
 </table>
 
+### 4 Axis Joystick
 The program supports the following functions using a simple 4 axis joystick.
 
 Other functions can be provided by Bitfocus Companion, via the OSC interface or the VISCA Relay
@@ -285,6 +292,11 @@ In order to implement these functions, the program assumes that one page of butt
 
 The Companion host address and the page containing the trigger buttons can be configured using the Configuration dialog
 
+### Transition Bar (T-bar)
+
+Implements a T-Bar video fader. The program translates an axis configured as a T-bar into a value from 0 to 100, and relays the value to a Bitfocus Companion custom variable **$(custom:tbar_value)**.
+By triggering on a change to that variable, Companion can relay this value to the appropriate setting in a video switcher (e.g. a Blackmagic ATEM).
+
 ### OSC Interface
 
 To support actions triggered by Companion, the application provides a UDP
@@ -300,6 +312,24 @@ Specifically, any VISCA command received on port 10000 will be forwarded to the 
 response will be forwarded back.
 
 This allows Companion to provide functions beyond those supported by the buttons on the current Game Controller or Joystick.
+
+## User Defined Controllers
+
+Controller actions are defined through dictionaries which are read when a new controller is connected to the computer. 
+
+The file [CONTROLLER_MAP.json](CONTROLLER_MAP.json) defines a mapping from the controller name string to a file containing a dictionary. If no entry matches the name string then the value for **default** is used, which selects an Xbox style controller.
+
+Currently implemented controller types are:
+- [GameController.json](GameController.json) defines the mappings from controller buttons, axis, and hats for an Xbox style controller
+- [Logitech3DPro.json](Logitech3DPro.json) defines the mappings from controller buttons, axis, and hats for a Logitech Extreme 3D Pro joystick
+- [HomeBrew4Axis.json](HomeBrew4Axis.json) defines the mappings from controller buttons, axis, and hats for a simple 4 axis joystick
+
+The program searches for these files in the order 
+- *%LOCALAPPDATA%*
+- *%APPDATA%*
+- The program installation directory
+
+A user can define new controllers, or override the default configurations, by appropriately editing **CONTROLLER_MAP.json** and editing or creating new controller definition JSON files. 
 
 ## Python Packages used
 - numpy
@@ -320,7 +350,7 @@ $FileDir$\.venv\Scripts\\pyi-makespec
 ````
 Arguments:
 ````
---onedir
+---onedir
 --windowed
 --additional-hooks-dir=.
 --name
@@ -332,6 +362,20 @@ $FileDir$\version_info.rs
 $FileDirName$.png;.
 --add-data
 $FileDirName$.ico;.
+--add-data
+CONTROLLER_MAP.json:.
+--add-data
+GameController.json:.
+--add-data
+GameController.png:.
+--add-data
+Logitech3DPro.json:.
+--add-data
+LogitechJoystick.png:.
+--add-data
+HomeBrew4Axis.json:.
+--add-data
+4axis.png:.
 $FilePath$
 ````
 Working Directory:
