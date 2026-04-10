@@ -57,7 +57,7 @@
   ],
   "HELP": [
     "string",
-    "\n\nPan & Tilt     \n                Joystick L/R/U/D\nZoom\n                Twist joystick\nManual Focus\n                Hat\n                up: focus far \n                down: focus near \n                left/right: autofocus\nSelect Camera\n                Top buttons: 1-4\n                long press: 5-8\n                puts selected camera in Preview\nFade Preview to Program \n                Front trigger\nWhite Balance\n                Side trigger\n                short press: one push white balance \n                long press: auto white balance\nPresets 1-6    \n                Base buttons. \n                short press: recall\n                long press: set\n"
+    "\n\nPan & Tilt\n                Joystick L/R/U/D\nZoom\n                Twist joystick\nManual Focus\n                Hat\n                up: focus far \n                down: focus near \n                left/right: autofocus\nSelect Camera\n                Top buttons: 1-4\n                long press: 5-8\n                puts selected camera in Preview\nFade Preview to Program \n                Front trigger\nWhite Balance\n                Side trigger\n                short press: one push white balance \n                long press: auto white balance\nPresets 1-6\n                Base buttons\n                short press: recall\n                long press: set\nVideo Fade\n                Transition Bar\n"
   ],
   "HELP_IMAGE": [
     "file",
