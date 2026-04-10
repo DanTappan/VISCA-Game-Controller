@@ -350,7 +350,7 @@ $FileDir$\.venv\Scripts\\pyi-makespec
 ````
 Arguments:
 ````
---onedir
+---onedir
 --windowed
 --additional-hooks-dir=.
 --name
@@ -362,6 +362,20 @@ $FileDir$\version_info.rs
 $FileDirName$.png;.
 --add-data
 $FileDirName$.ico;.
+--add-data
+CONTROLLER_MAP.json:.
+--add-data
+GameController.json:.
+--add-data
+GameController.png:.
+--add-data
+Logitech3DPro.json:.
+--add-data
+LogitechJoystick.png:.
+--add-data
+HomeBrew4Axis.json:.
+--add-data
+4axis.png:.
 $FilePath$
 ````
 Working Directory:
