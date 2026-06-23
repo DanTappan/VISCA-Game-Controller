@@ -245,8 +245,8 @@ Presets 1-6
 </tr>
 </table>
 
-### 4 Axis Joystick
-The program supports the following functions using a simple 4 axis joystick.
+### Homebrew 4 Axis Joystick
+The program supports the following functions using a homebrew controller based on https://github.com/DanTappan/Pico2Joystick, which supports a 4 axis joystick, 4 buttons, and a transition-bar.
 
 Other functions can be provided by Bitfocus Companion, via the OSC interface or the VISCA Relay
 ![4axis Joystick](4axis.png)
@@ -273,6 +273,8 @@ Preview to Program. If Bitfocus Companion is running (and properly configured) t
 Top button
 </td>
 </tr>
+<tr><td>Select or set (long press) Presets 1-4</td><td>Colored buttons</td></tr>
+<tr><td>Fade the Preview to Program (required Bitfocus Companion integration)</td><td>Transition Bar</td></tr>
 </table>
 
 ## Bitfocus Companion integrations
@@ -311,7 +313,7 @@ VISCA commands to the currently selected camera.
 Specifically, any VISCA command received on port 10000 will be forwarded to the current camera, and the camera's
 response will be forwarded back.
 
-This allows Companion to provide functions beyond those supported by the buttons on the current Game Controller or Joystick.
+This allows Companion to implement VISCA control functions beyond those supported by the buttons on the current Game Controller or Joystick.
 
 ## User Defined Controllers
 
