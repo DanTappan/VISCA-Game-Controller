@@ -3,7 +3,7 @@
 #
 from enum import IntEnum
 import time
-from typing import Union, Dict
+from typing import Dict
 
 import pygame
 import pygame.event
@@ -158,7 +158,7 @@ class BaseControllerDef:
         except KeyError:
             return None
 
-    def value(self, key):
+    def value(self, key) -> None | int | str :
         try:
             return self.dict[key][1]
         except KeyError:
@@ -200,9 +200,9 @@ class Controller:
         #
         # lists of defined buttons/axes/hats per controller
         #
-        self.buttons: list[Union[ControllerButton, None]] = []
-        self.axes: list[Union[ControllerAxis, None]] = []
-        self.hats: list[Union[ControllerHat, None]] = []
+        self.buttons: list[ControllerButton|None] = []
+        self.axes: list[ControllerAxis|None] = []
+        self.hats: list[ControllerHat|None] = []
 
         #
         # map button functions to actions
@@ -401,15 +401,18 @@ def setup_controller(controller: Controller):
     if controller.dead_zone is not None:
         dead_zone = controller.dead_zone # configuration override default
     controller.set_help_text(device.value("HELP"))
-    controller.set_help_image(file_path(device.value("HELP_IMAGE")))
+    controller.set_help_image(file_path(str(device.value("HELP_IMAGE"))))
 
     try:
-        controller.buttons[device.value("CAMERA_SELECT_1")] =  ControllerButton(controller,
-                                                                                ControlFunc.CAMERA_SELECT, 1)
+        # noinspection PyTypeChecker
+        controller.buttons[device.value("CAMERA_SELECT_1")] =  ControllerButton(controller, ControlFunc.CAMERA_SELECT, 1)
+        # noinspection PyTypeChecker
         controller.buttons[device.value("CAMERA_SELECT_2")] = ControllerButton(controller,
                                                                                ControlFunc.CAMERA_SELECT, 2)
+        # noinspection PyTypeChecker
         controller.buttons[device.value("CAMERA_SELECT_3")] = ControllerButton(controller,
                                                                                ControlFunc.CAMERA_SELECT, 3)
+        # noinspection PyTypeChecker
         controller.buttons[device.value("CAMERA_SELECT_4")] = ControllerButton(controller, ControlFunc.CAMERA_SELECT, 4)
     except TypeError:
         pass
@@ -417,79 +420,116 @@ def setup_controller(controller: Controller):
     t = device.type("BRIGHTNESS_UP")
     if t == "button":
         v = device.value("BRIGHTNESS_UP")
+        # noinspection PyTypeChecker
         controller.buttons[v] = ControllerButton(controller, ControlFunc.BRIGHTNESS_UP)
     t = device.type("BRIGHTNESS_DOWN")
     if t == "button":
         v = device.value("BRIGHTNESS_DOWN")
+        # noinspection PyTypeChecker
         controller.buttons[v] = ControllerButton(controller, ControlFunc.BRIGHTNESS_DOWN)
 
     t = device.type("AUTO_FOCUS")
     if t == "button":
         v = device.value("AUTO_FOCUS")
+        # noinspection PyTypeChecker
         controller.buttons[v] = ControllerButton(controller, ControlFunc.AUTOFOCUS)
 
     t = device.type("WHITE_BALANCE")
     if t == "button":
+        # noinspection PyTypeChecker
         controller.buttons[device.value("WHITE_BALANCE")] = ControllerButton(controller,
                                                                              ControlFunc.WHITE_BALANCE)
     t = device.type("PREV2PROG")
     if t == "button":
+        # noinspection PyTypeChecker
         controller.buttons[device.value("PREV2PROG")] = ControllerButton(controller,
                                                                          ControlFunc.PREV2PROG)
 
     v = device.value("PREV2PROG2")
     if v is not None:
+        # noinspection PyTypeChecker
         controller.buttons[v] = ControllerButton(controller, ControlFunc.PREV2PROG)
 
     v = device.value("PAN")
     if v is not None:
+        # noinspection PyTypeChecker
         axis = ControllerAxis(controller, ControlFunc.PANTILT, v, dead_zone=dead_zone)
-        controller.axes[v] = axis
         controller.pan_axis = axis
+        try:
+            # noinspection PyTypeChecker
+            controller.axes[v] = axis
+        except IndexError:
+            pass
 
     v = device.value("TILT")
     if v is not None:
+        # noinspection PyTypeChecker
         axis = ControllerAxis(controller, ControlFunc.PANTILT, v, dead_zone=dead_zone)
-        controller.axes[v] = axis
         controller.tilt_axis = axis
+        try:
+            # noinspection PyTypeChecker
+            controller.axes[v] = axis
+        except IndexError:
+            pass
+
 
     v = device.value("ZOOM")
     if v is not None:
+        # noinspection PyTypeChecker
         axis = ControllerAxis(controller, ControlFunc.ZOOM, v,
                               invert=device.value("INVERT_ZOOM"), dead_zone=dead_zone)
-        controller.axes[v] = axis
+        try:
+            # noinspection PyTypeChecker
+            controller.axes[v] = axis
+        except IndexError:
+            pass
 
     v = device.value("TBAR")
     if v is not None:
+        # noinspection PyTypeChecker
         axis = ControllerAxis(controller, ControlFunc.TBAR, v, dead_zone=0)
-        controller.axes[v] = axis
+        try:
+            # noinspection PyTypeChecker
+            controller.axes[v] = axis
+        except IndexError:
+            pass
 
     t = device.type("FOCUS_NEAR")
     if t == "axis":
         v = device.value("FOCUS_NEAR")
+        # noinspection PyTypeChecker
         axis = ControllerAxis(controller, ControlFunc.FOCUS_NEAR, v, dead_zone=dead_zone)
+        # noinspection PyTypeChecker
         controller.axes[v] = axis
 
     t = device.type("FOCUS_FAR")
     if t == "axis":
         v = device.value("FOCUS_FAR")
+        # noinspection PyTypeChecker
         axis = ControllerAxis(controller, ControlFunc.FOCUS_FAR, v, dead_zone=dead_zone)
+        # noinspection PyTypeChecker
         controller.axes[v] = axis
 
     t = device.type("FOCUS")
     if t == "hat":
         v = device.value("FOCUS")
+        # noinspection PyTypeChecker
         controller.hats[v] = ControllerHat(controller, ControlFunc.FOCUS, 0)
 
     t = device.type("PRESETS")
     if t == "hat":
         v = device.value("PRESETS")
+        # noinspection PyTypeChecker
         controller.hats[v] = ControllerHat(controller, ControlFunc.PRESET, v)
     elif t == "button":
         button_num = device.value("PRESETS")
+        # noinspection PyTypeChecker
         for v in range(device.value("NUM_PRESETS")):
-            controller.buttons[button_num + v] = ControllerButton(controller, ControlFunc.PRESET, v+1)
-
+            # noinspection PyTypeChecker
+            try:
+                controller.buttons[button_num + v] = ControllerButton(controller, ControlFunc.PRESET, v+1)
+            except IndexError:
+                pass
 
 #
 # Handle a pygame event

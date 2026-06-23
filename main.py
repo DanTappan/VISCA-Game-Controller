@@ -177,11 +177,8 @@ def handle_tbar(axis: ControllerAxis):
     pos = int(round((pos + 1) / 2, 2) * 100)
 
     if pos == 100:
-        # prev2prog
-        bitfocus.pushbutton(*config.companion(1, 1))
         axis.invert *= -1  # flip axis
-    else:
-        bitfocus.t_bar(pos, config.companion_host())
+    bitfocus.t_bar(pos, config.companion_host())
 
 def handle_prev2prog(button: ControllerButton=None):
     """"

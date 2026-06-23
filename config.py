@@ -7,7 +7,7 @@ import PySimpleGUI as Sg
 g_Debug = False
 
 g_Progname = "VISCA Game Controller"
-g_ProgVers = "1.0beta6"
+g_ProgVers = "1.0beta7"
 
 g_num_cams = 8
 cam_ips = ['127.0.0.1']*g_num_cams
@@ -142,7 +142,7 @@ def load_config():
         configure()
 
 credits_text = """
-Dan Tappan (https://dantappan.net) - (c) 2024, 2025
+Dan Tappan (https://dantappan.net) - (c) 2024, 2025, 2026
 
 Written/debugged using PyCharm Community Edition 
     https://www.jetbrains.com/pycharm/

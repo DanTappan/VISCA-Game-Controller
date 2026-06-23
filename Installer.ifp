@@ -4,7 +4,7 @@
   <Metadata productVersion="1.6.1" projectFileVersion="2.0"/>
   <ProductInformation>
     <Name>VISCA Game Controller</Name>
-    <Version>1.0beta6</Version>
+    <Version>1.0beta7</Version>
     <CompanyName>Dan Tappan</CompanyName>
     <WebURI>https://dantappan.net</WebURI>
   </ProductInformation>
@@ -75,7 +75,7 @@
     <Program executableFilePath="" isLaunchEnabled="false" isTerminationEnabled="false"/>
   </VisualUpdateConfiguration>
   <BuildConfiguration>
-    <SetupFilePath>C:\Users\dan\Desktop\Distributions\Install VISCA Game Controller 1.0beta6.exe</SetupFilePath>
+    <SetupFilePath>C:\Users\dan\Desktop\Distributions\Install VISCA Game Controller 1.0beta7.exe</SetupFilePath>
     <SetupIconPath>..\icons\ancient.ico</SetupIconPath>
     <UninstallerIconPath>..\icons\ancient.ico</UninstallerIconPath>
     <Compression method="0" level="2"/>

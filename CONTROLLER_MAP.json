@@ -1,5 +1,6 @@
 {
   "default": "GameController.json",
   "Homebrew 1": "HomeBrew4Axis.json",
-  "Extreme 3D pro": "Logitech3DPro.json"
+  "Extreme 3D pro": "Logitech3DPro.json",
+  "Homebrew RP2040" : "Homebrew4Axis.json"
 }

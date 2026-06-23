@@ -3,6 +3,14 @@
     "button",
     0
   ],
+  "PRESETS": [
+    "button",
+    1
+  ],
+  "NUM_PRESETS": [
+    "number",
+    4
+  ],
   "PAN": [
     "axis",
     0
@@ -19,9 +27,13 @@
     "number",
     -1
   ],
+  "TBAR": [
+    "axis",
+    3
+  ],
   "HELP": [
     "string",
-    "\n\nPan & Tilt     \n                Joystick L/R/U/D\nZoom\n                Twist joystick\nFade Preview to Program \n                Top button\n"
+    "\n\nPan & Tilt     \n                Joystick L/R/U/D\nZoom\n                Twist joystick\nFade Preview to Program \n                Top button\nPresets 1-4     \n                Colored Buttons\nTransition Preview to Program \n                T-Bar\n"
   ],
   "HELP_IMAGE": [
     "file",
