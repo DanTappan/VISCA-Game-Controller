@@ -640,11 +640,11 @@ Example:
 /setcamname 1 "House L"
 
 Tip:
-This command allows the camera names to be reflected, by Companion, from a BlackMagic ATEM
-or other switching device that supports configurable display names. 
+This command allows the camera names to be reflected, by Companion, from a BlackMagic
+ATEM or other switching device that supports configurable display names. 
 Hint:
-If using the Companion Action "osc: Send message with multiple arguments" make sure to enclose
-the camera name string in double quotes (as above), in case it contains spaces
+If using the Companion Action "osc: Send message with multiple arguments" make sure to
+enclose the camera name string in double quotes (as above), in case it contains spaces
 """,
             title="Companion Help",
             keep_on_top=True,
