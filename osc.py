@@ -11,6 +11,9 @@ from pythonosc.osc_server import BlockingOSCUDPServer
 from win_print import win_print
 #from time import sleep
 
+# Phil Rose: allow OSC /setcam to use camera names as well as numbers.
+from config import cam_names, g_num_cams
+
 OSC_Port = 9999
 
 window : Optional[Sg.Window]  = None
@@ -19,12 +22,34 @@ def camera_handler(_address, *args):
     """ Dispatcher handler for setcam command """
     global window
 
+    if len(args) == 0:
+        win_print("OSC Set Camera: missing argument")
+        return
+
     try:
         cam_num = int(args[0])
-        window.write_event_value('OSC_SET_CAMERA', cam_num)
-
+ 
     except ValueError:
-        win_print(f"OSC Set Camera: bad arguments {args}")
+        # Phil Mod: allow /setcam "Lathe" or /setcam "Front"
+        requested_name = str(args[0]).strip().lower()
+        cam_num = None
+
+        for i in range(g_num_cams):
+            if cam_names[i].strip().lower() == requested_name:
+                cam_num = i + 1
+                break
+
+        if cam_num is None:
+            win_print(f"OSC Set Camera: unknown camera name '{args[0]}'")
+            return
+
+    window.write_event_value('OSC_SET_CAMERA', cam_num)
+
+def clear_camera_handler(_address, *args):
+    """ Disable gamepad PTZ control when no camera is active. """
+    global window
+    window.write_event_value('OSC_CLEAR_CAMERA', None)
+
 
 def osc_task(t):
     """
@@ -48,7 +73,8 @@ class OSCTask:
 
         self.dispatcher = Dispatcher()
         self.dispatcher.map("/setcam", camera_handler)
-        self.server = BlockingOSCUDPServer(('',
+        self.dispatcher.map("/clearcam", clear_camera_handler)
+        self.server = BlockingOSCUDPServer(('127.0.0.1',
                                             OSC_Port),
                                            dispatcher=self.dispatcher)
         self.thread = threading.Thread(target=self.osc_task)

@@ -33,6 +33,14 @@ if Windows and UsePsgTray:
 
 cam: Optional[Camera] = None
 current_cam = "Unknown"
+
+# ------------------------------------------------------------------
+# Phil Rose (2026-06-24)
+# Tracks whether the Xbox/gamepad should currently control PTZ.
+# /setcam enables this; /clearcam disables it for non-camera sources.
+# ------------------------------------------------------------------
+gamepad_enabled = True
+
 main_window:Optional[Sg.Window] = None
 config: Config = Config()
 bitfocus: Companion = Companion()
@@ -114,7 +122,12 @@ def connect_to_camera(cam_num) -> Optional[Camera]:
     if newcam is None:
         cam_name = "Unknown"
     else:
-        cam_name = str(cam_num)
+        # ------------------------------------------------------------------
+        # Phil Mod (2026-06-21)
+        # Display configured camera names instead of numeric identifiers.
+        # ------------------------------------------------------------------
+        cam_name = config.cam_name(cam_num - 1)
+
         # Bitfocus Companion (row 0, camera_number), should be configured to set Preview
         # to the selected camera
         bitfocus.pushbutton(* config.companion(0, cam_num))
@@ -138,7 +151,10 @@ def handle_select_cam(button: ControllerButton = None):
     Handle a button push to select a camera
     activates on button uup. Long press selects 2nd bank of cameras
     """
-    global cam
+    # Phil Rose - added gamepad_enabled
+    global cam, gamepad_enabled
+
+    gamepad_enabled = True
 
     if button is None or button.is_down:
         return
@@ -298,6 +314,27 @@ def handle_autofocus(button: ControllerButton):
     cam.set_focus_mode('auto')
     win_print("AutoFocus mode")
 
+# Phil Rose (2026-06-24)
+# Companion OSC command to explicitly disable PTZ control.
+def osc_clear_cam():
+    """
+    Handle the Companion /clearcam OSC command.
+
+    Disables gamepad PTZ control until another camera is selected
+    with /setcam.
+    """
+    global gamepad_enabled, current_cam
+
+    gamepad_enabled = False
+    current_cam = "No Active Camera"
+
+    win_print(current_cam)
+
+    if UsePsgTray:
+        tray = main_window.metadata
+        if tray is not None:
+            tray.set_tooltip(f"{config.progname}: {current_cam}")
+
 class FocusEnum(IntEnum):
     NEAR=0
     FAR=1
@@ -380,7 +417,11 @@ def handle_pantilt(axis: ControllerAxis=None):
     Handle motion of one of the pan/tilt axes.
     We need to set both at once, so we don't care which one moved
     """
-    global cam
+    # Phil Rose added gamepad_enabled
+    global cam, gamepad_enabled
+
+    if not gamepad_enabled:
+        return
 
     if cam is None or axis is None:
         return
@@ -405,7 +446,11 @@ def handle_zoom(axis:ControllerAxis):
     """
     Handle motion of the zoom axis
     """
-    global cam
+    # Phil rose added gamepad_enabled
+    global cam, gamepad_enabled
+
+    if not gamepad_enabled:
+        return
 
     if cam is None or axis is None:
         return
@@ -526,6 +571,64 @@ def main_loop():
                              title="Help", keep_on_top=True, line_width=70,
                              image=search_path(controller.help_image))
 
+# Phil Rose (2026-06-24)
+# Companion OSC integration help for camera-name selection and /clearcam support.
+        elif event == 'Companion Help':
+            Sg.popup_scrolled(
+                f"""{config.progname} ({config.progvers})
+
+Companion / OSC Integration
+
+The application listens for OSC messages on UDP port 9999 on 127.0.0.1
+
+Select a camera with the Generic: OSC Connection
+----------------
+OSC Path:
+/setcam
+
+Value:
+Either a camera name or a configured camera number.
+
+Examples:
+/setcam Front
+/setcam Left
+/setcam Over
+/setcam Tail
+
+or
+
+/setcam 1
+/setcam 2
+
+Selecting a camera automatically enables gamepad PTZ control.
+
+Disable PTZ control
+-------------------
+OSC Path:
+/clearcam
+
+No value is required.
+
+Example:
+/clearcam
+
+Use /clearcam when switching to a non-camera
+source such as PowerPoint, video playback,
+or screen sharing.
+
+This disables gamepad PTZ movement until
+another /setcam command is received.
+
+Tip:
+Using configured camera names (e.g. Front, Left, Over, Tail)
+is recommended instead of camera numbers, since names remain
+consistent even if camera assignments change.
+""",
+            title="Companion Help",
+            keep_on_top=True,
+            size=(80, 25)
+        )
+        
         elif event == 'Credits':
             Sg.popup(config.credits_text, title="Credits", keep_on_top=True, line_width=80)
 
@@ -547,6 +650,10 @@ def main_loop():
                 ev = values[0]
 
             pygame_lock(lambda: handle_pygame_event(ev))
+
+# Companion /clearcam support
+        elif event == "OSC_CLEAR_CAMERA":
+            pygame_lock(lambda: osc_clear_cam())
 
         elif event == "OSC_SET_CAMERA":
             pygame_lock(lambda: osc_select_cam(values['OSC_SET_CAMERA']))
@@ -643,7 +750,7 @@ def main():
                             size=output_size,
                             key='OUTPUT')
 
-    menu_def = [['Menu', ['Minimize', 'Configure', 'Help', 'Credits', 'Exit']]]
+    menu_def = [['Menu', ['Minimize', 'Configure', 'Help', 'Companion Help', 'Credits', 'Exit']]]
     layout = [[Sg.Menu(menu_def)], [output]]
 
     window = Sg.Window( title=config.progname, layout=layout,
