@@ -7,12 +7,22 @@
 # - The UDP API is configured on the default port (16759)
 #
 import socket
+import time
 
 class Companion:
-    def __init__(self,  port:int=16759):
+    def __init__(self, port:int=16759):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.port = port
 
+    def startup(self, host='127.0.0.1'):
+        # Set a custom variable at startup to trigger load of camera names etc
+        value = time.time()
+        buffer = f'CUSTOM-VARIABLE VISCAControllerRestart SET-VALUE {value}'
+        address = (host, self.port)
+        try:
+            self.socket.sendto(buffer.encode('utf-8'), address)
+        except OSError:
+            print("companion send failed")
 
     def pushbutton(self,  page:int, row:int, column:int, host='127.0.0.1'):
         buffer = f"LOCATION {page}/{row}/{column} PRESS"
@@ -30,6 +40,7 @@ class Companion:
             self.socket.sendto(buffer.encode('utf-8'), address)
         except OSError:
             print("companion send failed")
+
 
 
 

@@ -807,6 +807,8 @@ def main():
 
     osc_task = OSCTask(window)
 
+    bitfocus.startup(config.companion_host())
+
     while True:
         if config.debug:
             if not main_loop():
