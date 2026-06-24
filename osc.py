@@ -45,7 +45,34 @@ def camera_handler(_address, *args):
 
     window.write_event_value('OSC_SET_CAMERA', cam_num)
 
-def clear_camera_handler(_address, *args):
+def camera_name_handler(_address, *args):
+    """ Dispatcher handler for setcamname command
+        arg1: camera number (str)
+        arg2: camera name (str)
+        """
+    global window
+
+    if len(args) < 2:
+        win_print("OSC Set Camera Name: missing argument")
+        return
+
+    try:
+        cam_num = int(args[0])
+        if cam_num < 0 or cam_num > g_num_cams:
+            cam_num = None
+    except ValueError:
+        cam_num = None
+
+    if cam_num is None:
+        win_print("OSC Set Camera Name: invalid camera number")
+        return
+
+    cam_name = args[1].replace('"', '') # in case the string came over with double quotes
+
+    win_print(f"Set Camera {cam_num} Name: {cam_name}")
+    window.write_event_value('OSC_SET_CAMERA_NAME', (cam_num, cam_name))
+
+def clear_camera_handler(_address):
     """ Disable gamepad PTZ control when no camera is active. """
     global window
     window.write_event_value('OSC_CLEAR_CAMERA', None)
@@ -74,6 +101,7 @@ class OSCTask:
         self.dispatcher = Dispatcher()
         self.dispatcher.map("/setcam", camera_handler)
         self.dispatcher.map("/clearcam", clear_camera_handler)
+        self.dispatcher.map("/setcamname", camera_name_handler)
         self.server = BlockingOSCUDPServer(('127.0.0.1',
                                             OSC_Port),
                                            dispatcher=self.dispatcher)

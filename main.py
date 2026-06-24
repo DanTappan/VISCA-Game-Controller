@@ -33,6 +33,7 @@ if Windows and UsePsgTray:
 
 cam: Optional[Camera] = None
 current_cam = "Unknown"
+current_cam_num = 0
 
 # ------------------------------------------------------------------
 # Phil Rose (2026-06-24)
@@ -92,7 +93,7 @@ def handle_brightness(button: ControllerButton, up):
 
 def connect_to_camera(cam_num) -> Optional[Camera]:
     """Connects to the camera specified by cam_index and returns it"""
-    global cam, current_cam, main_window
+    global cam, current_cam, current_cam_num, main_window
 
     win = main_window
 
@@ -120,13 +121,13 @@ def connect_to_camera(cam_num) -> Optional[Camera]:
 
     cam = newcam
     if newcam is None:
-        cam_name = "Unknown"
+        cam_name = "Camera Unknown"
     else:
         # ------------------------------------------------------------------
         # Phil Mod (2026-06-21)
         # Display configured camera names instead of numeric identifiers.
         # ------------------------------------------------------------------
-        cam_name = config.cam_name(cam_num - 1)
+        cam_name = config.cam_name(cam_num)
 
         # Bitfocus Companion (row 0, camera_number), should be configured to set Preview
         # to the selected camera
@@ -136,8 +137,9 @@ def connect_to_camera(cam_num) -> Optional[Camera]:
         # noinspection PyTypeChecker
         visca_relay.ptz_set(ptz=cam_ip, ptz_port=cam_port)
 
-    win_print(f'Camera {cam_name}')
+    win_print(f'{cam_name}')
     current_cam = cam_name
+    current_cam_num = cam_num
 
     if UsePsgTray:
         tray = win.metadata
@@ -146,7 +148,7 @@ def connect_to_camera(cam_num) -> Optional[Camera]:
     
     return cam
 
-def handle_select_cam(button: ControllerButton = None):
+def handle_select_cam(button: Optional[ControllerButton] = None):
     """
     Handle a button push to select a camera
     activates on button uup. Long press selects 2nd bank of cameras
@@ -171,7 +173,10 @@ def osc_select_cam(cam_num):
     """
     Handle a select camera event via OSC
     """
-    global cam
+    global cam, current_cam_num
+
+    if cam_num == current_cam_num:
+        return # filter duplicate selects
 
     if cam_num < 1 or cam_num > config.num_cams:
         win_print(f"OSC set camera: bad camera number {cam_num}")
@@ -196,7 +201,7 @@ def handle_tbar(axis: ControllerAxis):
         axis.invert *= -1  # flip axis
     bitfocus.t_bar(pos, config.companion_host())
 
-def handle_prev2prog(button: ControllerButton=None):
+def handle_prev2prog(button: Optional[ControllerButton]=None):
     """"
     Handle a push on the button to switch Preview and Program windows
     """
@@ -412,7 +417,7 @@ def handle_white_balance(button:ControllerButton):
         cam.white_balance_mode('one push trigger')
 
 
-def handle_pantilt(axis: ControllerAxis=None):
+def handle_pantilt(axis: Optional[ControllerAxis]=None):
     """
     Handle motion of one of the pan/tilt axes.
     We need to set both at once, so we don't care which one moved
@@ -623,6 +628,23 @@ Tip:
 Using configured camera names (e.g. Front, Left, Over, Tail)
 is recommended instead of camera numbers, since names remain
 consistent even if camera assignments change.
+-------------------
+OSC Path:
+/setcamname
+
+Values:
+- A camera number (string)
+- The name to associate with a camera
+
+Example:
+/setcamname 1 "House L"
+
+Tip:
+This command allows the camera names to be reflected, by Companion, from a BlackMagic ATEM
+or other switching device that supports configurable display names. 
+Hint:
+If using the Companion Action "osc: Send message with multiple arguments" make sure to enclose
+the camera name string in double quotes (as above), in case it contains spaces
 """,
             title="Companion Help",
             keep_on_top=True,
@@ -658,6 +680,8 @@ consistent even if camera assignments change.
         elif event == "OSC_SET_CAMERA":
             pygame_lock(lambda: osc_select_cam(values['OSC_SET_CAMERA']))
 
+        elif event == "OSC_SET_CAMERA_NAME":
+            config.set_cam_name(*values['OSC_SET_CAMERA_NAME'])
 
 pygame_task_exit = False
 pygame_thread: Optional[threading.Thread] = None

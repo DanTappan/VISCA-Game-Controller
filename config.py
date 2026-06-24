@@ -52,7 +52,7 @@ sensitivity_tables = {
 g_long_press_time = 0
 g_invert_tilt = False
 g_swap_pan = False
-g_dead_zone = None
+g_dead_zone = 0.0
 
 # Bitfocus companion interface
 # the trigger commands are assumed to all be on one page
@@ -258,11 +258,10 @@ def configure():
             g_Debug = values['-DEBUG-']
             g_invert_tilt = values['-INVERT-TILT-']
             g_swap_pan = values['-SWAP-PAN-']
-            g_dead_zone = values['-DEAD-ZONE-']
             try:
-                g_dead_zone = float(g_dead_zone)
+                g_dead_zone = float(values['-DEAD-ZONE-'])
             except ValueError:
-                g_dead_zone = None
+                g_dead_zone = 0.0
 
             
             # ------------------------------------------------------------------
@@ -385,6 +384,14 @@ class Config:
         self._brightness_button = True
         load_config()
 
+    def set_cam_name(self, idx,  name):
+        try:
+            # should we save this in the config?
+            # for now, make it temporary change and let config override
+            cam_names[idx-1] = name
+        except IndexError:
+            pass    # do nothing
+
     @staticmethod
     def companion(row:int, column:int):
         return [g_companion_page, row, column, g_companion_host]
@@ -431,9 +438,9 @@ class Config:
     @staticmethod
     def cam_name(idx):
         try:
-            return cam_names[idx]
+            return cam_names[idx-1]
         except IndexError:
-            return f"Camera {idx+1}"
+            return f"Camera {idx}"
     # ------------------------------------------------------------------
 
     @staticmethod
