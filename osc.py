@@ -9,6 +9,8 @@ import PySimpleGUI as Sg
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 from win_print import win_print
+import socket
+
 #from time import sleep
 
 # Phil Rose: allow OSC /setcam to use camera names as well as numbers.
@@ -93,7 +95,7 @@ class OSCTask:
         self.server.timeout = .5
         self.server.serve_forever()
 
-    def __init__(self, win : Sg.Window):
+    def __init__(self, win : Sg.Window, host=''):
         global window
 
         window = win
@@ -102,9 +104,9 @@ class OSCTask:
         self.dispatcher.map("/setcam", camera_handler)
         self.dispatcher.map("/clearcam", clear_camera_handler)
         self.dispatcher.map("/setcamname", camera_name_handler)
-        self.server = BlockingOSCUDPServer(('127.0.0.1',
-                                            OSC_Port),
-                                           dispatcher=self.dispatcher)
+        self.server = BlockingOSCUDPServer((host, OSC_Port),
+                                           dispatcher=self.dispatcher,
+                                           family=socket.AF_INET)
         self.thread = threading.Thread(target=self.osc_task)
         self.thread.daemon = True
         self.thread.start()

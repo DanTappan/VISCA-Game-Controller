@@ -44,7 +44,7 @@ gamepad_enabled = True
 
 main_window:Optional[Sg.Window] = None
 config: Config = Config()
-bitfocus: Companion = Companion()
+bitfocus: Companion = Companion(config.companion_host())
 visca_relay: ViscaRelay = ViscaRelay(rcv_port=config.visca_relay_port)
 controller_list: Optional[ControllerList]  = None
 
@@ -199,7 +199,7 @@ def handle_tbar(axis: ControllerAxis):
 
     if pos == 100:
         axis.invert *= -1  # flip axis
-    bitfocus.t_bar(pos, config.companion_host())
+    bitfocus.t_bar(pos)
 
 def handle_prev2prog(button: Optional[ControllerButton]=None):
     """"
@@ -807,7 +807,7 @@ def main():
 
     osc_task = OSCTask(window)
 
-    bitfocus.startup(config.companion_host())
+    bitfocus.startup()
 
     while True:
         if config.debug:

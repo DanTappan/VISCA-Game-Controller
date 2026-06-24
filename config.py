@@ -210,6 +210,7 @@ def configure():
 
         [Sg.HorizontalSeparator()],
         [Sg.Text('Companion', font=('Any', 10, 'bold'))],
+        [Sg.Text('(Changes take effect after restart)', font=('Any', 10, 'italic'))],
         [Sg.Text('Bitfocus Companion Page '),
         Sg.Input(default_text=str(g_companion_page), key='-COMPANION-PAGE-', size=4),
         Sg.Text('Bitfocus Companion Host '),
