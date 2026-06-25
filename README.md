@@ -63,25 +63,23 @@ Right-clicking on the System Tray icon provides a popup menu with the following 
 - "Center Window" - in case the window somehow gets moved off-screen, this moves it back to the center of the screen
 - "Exit" - closes the program
 
-The Configuration dialog allows setting the following parameters:
+The Configuration dialog allows setting the following parameters:<br>
+<image src="screenshots/VISCA-controller-configure.png" alt="Image of Config dialog" width="512px">
 
-![Configuration Dialog](screenshots/VISCA-controller-configure.png)
-
-- "Camera" and "Port" set the camera address and VISCA port for each camera. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below.
+- "Camera" and "Port" set the camera address and VISCA port for each camera. The default port number for SONY VISCA is 52381. If the program is being used in conjunction with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) application (which automatically forwards VISCA packets to the camera selected for the appropriate slot), then the camera address should set to 127.0.0.1 (localhost) and the port to 10000+*camera number*. See the "Relay" button below. The "Name" field sets a user friendly display name for each camera. For example, this can indicate the camera location. This name will be displayed in the feedback window when a camera is selected.
 - "Long Press" - the timeout value for a long press vs a short press of a button.
-The program must be restarted for a change to take effect.
-- "Dead Zone". This sets the size of the center dead zone, where the joysticks will not respond.
+- "Joystick dead zone". This sets the size of the center dead zone, where the joysticks will not respond.
 This is useful for noisy analog joysticks that do not zero properly. 
 It is also useful for the *Logitech Extreme 3D PRO*, where moving the stick tends to also twist the stick (Zoom function).
 Setting the value in the configuration dialog will override any default values selected by the program.
-Program restart is required for a change to take effect.
-- "Bitfocus Companion Host" and "Bitfocus Companion Page" select the address of the machine running BitFocus Companion and
-the page used for the Bitfocus Companion trigger functions.
-See section [Bitfocus Companion Integrations](#bitfocus-companion-integrations).
 - "Invert Tilt" - reverses the sense of the tilt joystick control
 - "Swap Pan" - reverses the sense of the pan joystick control
 - "Debug Mode" - enables some debugging functions
 - "Relay" - automatically fills in the Camera&Port fields with the correct values for operation with the [NDI Camera Selector](https://github.com/DanTappan/NDI-Camera-Selector) VISCA Relay function.
+- "Speed Profiles". This section configures the response curves for pan/tilt/zoom: how fast the camera will move at various positions of the associated joystick
+- "Bitfocus Companion Host" and "Bitfocus Companion Page" select the address of the machine running BitFocus Companion and
+the page used for the Bitfocus Companion trigger functions.
+See section [Bitfocus Companion Integrations](#bitfocus-companion-integrations).
 
 ## Controller Functions
 
@@ -304,7 +302,9 @@ By triggering on a change to that variable, Companion can relay this value to th
 To support actions triggered by Companion, the application provides a UDP
 [Open Sound Control(OSC)](https://en.wikipedia.org/wiki/Open_Sound_Control) on port 9999. 
 Currently, the supported commands are:
-* /setcam/_number_ to select the indicated camera. This supports using Companion buttons to select cameras.
+* /setcam/_number_ or /setcam/_name_ to select the indicated camera. This supports using Companion buttons to select cameras.
+* /clearcam to disable the camera control functions on the controller until the next camera select operation.
+* /setcamname/_number_/_name_ dynamically sets the display string for a camera.
 
 ### VISCA Relay
 
@@ -313,7 +313,7 @@ VISCA commands to the currently selected camera.
 Specifically, any VISCA command received on port 10000 will be forwarded to the current camera, and the camera's
 response will be forwarded back.
 
-This allows Companion to implement VISCA control functions beyond those supported by the buttons on the current Game Controller or Joystick.
+This allows using Companion buttons to implement VISCA control functions beyond those supported by the buttons on the current Game Controller or Joystick.
 
 ## User Defined Controllers
 
