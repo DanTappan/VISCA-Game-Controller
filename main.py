@@ -441,10 +441,11 @@ def handle_pantilt(axis: Optional[ControllerAxis]=None):
     #
     # It is possible (depending on controller?) to get a string of axis events after the
     # joystick has returned to 0. Filter these out to avoid excess 'stop' commands
-    # We cache the motion state in the pan_axis
-    if pan_axis.moving or (pan_speed != 0) or (tilt_speed != 0):
+    # We cache the motion state in the axis
+    if (pan_axis.moving != pan_speed) or (tilt_axis.moving != tilt_speed):
         cam.pantilt(pan_speed=pan_speed, tilt_speed=tilt_speed)
-    pan_axis.set_moving((pan_speed != 0) or (tilt_speed != 0))
+    pan_axis.set_moving(pan_speed)
+    tilt_axis.set_moving(tilt_speed)
 
 
 def handle_zoom(axis:ControllerAxis):
@@ -461,9 +462,9 @@ def handle_zoom(axis:ControllerAxis):
         return
 
     zoom = joy_pos_to_cam_speed(axis.get_position(), 'zoom')
-    if axis.moving or (zoom != 0):
+    if axis.moving != zoom: # only send commands if speed changes
             cam.zoom(zoom)
-    axis.set_moving(zoom != 0)
+    axis.set_moving(zoom)
 
 def handle_pygame_event(ev:pygame.event.Event):
     """
