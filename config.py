@@ -37,8 +37,8 @@ g_visca_relay_port = 10000  # currently hardwired
 # These are the editable camera speed values only; the leading zero
 # values and joystick breakpoints are handled in code.
 # ------------------------------------------------------------------
-g_pan_speeds = "1,1,3,5,7,9"
-g_tilt_speeds = "1,1,3,5,7,9"
+g_pan_speeds = "1,1,3,5,9,18"
+g_tilt_speeds = "1,1,3,5,9,18"
 g_zoom_speeds = "1,1,1,3,5,7"
 g_focus_speeds = "2,5,7"
 
@@ -194,11 +194,11 @@ def configure():
          
         [Sg.Text('Pan Speeds', size=18),
         Sg.Input(default_text=g_pan_speeds, key='-PAN-SPEEDS-', size=20),
-        Sg.Text('e.g. 1,1,3,5,7,9')],
+        Sg.Text('e.g. 1,1,3,5,9,18')],
 
         [Sg.Text('Tilt Speeds', size=18),
         Sg.Input(default_text=g_tilt_speeds, key='-TILT-SPEEDS-', size=20),
-        Sg.Text('e.g. 1,1,3,5,7,9')],
+        Sg.Text('e.g. 1,1,3,5,9,18')],
 
         [Sg.Text('Zoom Speeds', size=18),
         Sg.Input(default_text=g_zoom_speeds, key='-ZOOM-SPEEDS-', size=20),
