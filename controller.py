@@ -554,8 +554,6 @@ def handle_pygame_event(controller: Controller, ev: pygame.event.Event):
         except ZeroDivisionError:
             ev.value = 0
 
-        # Flush excess axis events that slow things down
-        controller.flush_axis_events()
         axis.event()
 
     elif ev.type == pygame.JOYBUTTONDOWN or ev.type == pygame.JOYBUTTONUP:
